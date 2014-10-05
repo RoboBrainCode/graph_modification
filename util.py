@@ -5,30 +5,35 @@ from py2neo import cypher
 
 GRAPH_DB_URL = "http://ec2-54-68-208-190.us-west-2.compute.amazonaws.com:7474"
 
-def get_indices(entry):
-    indices = [];
-    for relations in entry['graphStructure']:
-        rel_ = re.sub('.*:','',relations) #remove the edge type part and only get the node ids
-        rel_idx = [m.start()+1 for m in re.finditer('#', rel_)] #Iterate over the node ids
-        edge_name = (re.sub('\s.*','',re.sub(':,*','',relations))) #Get the edge type
-        node0_idx = int(rel_[rel_idx[0]])
-        node1_idx = int(rel_[rel_idx[1]])
-        indices.append((edge_name,node0_idx,node1_idx))
-    return indices 
+def get_edges_with_handle_indices(entry):
+    """ Returns array of tuples of the form (edge_name, 1, 2) where
+    1 and 2 correspond to node/hashtag/handle indices in entry['text'].
+    """
+    edges_with_indices = [];
+    for relation in entry['graphStructure']:
+        relation = relation.strip()
+        edge_name_removed = re.sub('.*:','',relation) #remove the edge type part and only get the node ids
+        node_indices = [m.group(1) for m in re.finditer(r'#(\d+)', edge_name_removed)]
+        assert len(node_indices) == 2
+        edge_name = re.match(r'#([\w-]+)', relation).group(1) #match matches beginning of string only
+        node0_idx = int(node_indices[0])
+        node1_idx = int(node_indices[1])
+        edges_with_indices.append((edge_name,node0_idx,node1_idx))
+    return edges_with_indices 
 
 
-def get_handles(entry):
+def get_edges_with_handles(entry):
     hashes = [m.group(0)[1:] for m in re.finditer('#[^ .]+', entry['text'])]
-    indices = get_indices(entry)
-    handles = []
-    for idx in indices:
+    edges_with_indices = get_edges_with_handle_indices(entry)
+    edges_with_handles = []
+    for idx in edges_with_indices:
         edge_handle =  idx[0] #str(hashes[idx[0]])
         node0_handle = str(hashes[idx[1]])
         node1_handle = str(hashes[idx[2]])
         node1_handle=re.sub("\'","",node1_handle)
         node0_handle=re.sub("\'","",node0_handle)
-        handles.append((edge_handle,node0_handle,node1_handle))
-    return handles
+        edges_with_handles.append((edge_handle,node0_handle,node1_handle))
+    return edges_with_handles
 
 # This function need to be re-written, currently it is ignoring all the media. 
 def get_media(entry):
@@ -88,3 +93,11 @@ def create_graph_elements(handles, media, edge_props):
               "CREATE (a)-[r:EDGE " + edge_props_str + "]->(b)")
 
     tx.commit()
+
+get_edges_with_handles({
+    'text': 'The position of a #Standing_human while using a #shoe is distributed as #heatmap_12.',
+    "graphStructure": [
+      "#spatially_distributed_as: #1 ->#2",
+      "#spatially_distributed_as: #0 ->#2",
+      "can_use: #0 ->#1"
+    ]})
