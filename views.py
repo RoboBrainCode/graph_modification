@@ -4,75 +4,44 @@ import sys
 import json
 import re
 from py2neo import cypher
-from collections import set
 
 GRAPH_DB_URL = "http://ec2-54-68-208-190.us-west-2.compute.amazonaws.com:7474"
 
 def _normalize_handle_name(handle):
     return re.sub("\'", "", handle).lower()
 
-def _get_edges_with_handle_indices(entry):
+def _get_edges_with_handle_indices(json_feed):
     """ Returns array of tuples of the form (edge_name, 1, 2) where
-    1 and 2 correspond to node/hashtag/handle indices in entry['text'].
+    1 and 2 correspond to node/hashtag/handle indices in json_feed['text'].
     """
     edges_with_indices = [];
-    for relation in entry['graphStructure']:
+    for relation in json_feed['graphStructure']:
         relation = relation.strip()
-        edge_name_removed = re.sub('.*:','',relation) #remove the edge type part and only get the node ids
-        node_indices = [m.group(1) for m in re.finditer(r'#(\d+)', edge_name_removed)]
+        # remove the edge type part and only get the node ids
+        edge_name_removed = re.sub('.*:','',relation)
+        node_indices = \
+            [m.group(1) for m in re.finditer(r'#(\d+)', edge_name_removed)]
         assert len(node_indices) == 2
-        edge_name = re.match(r'([\w-]+):', relation).group(1) #match matches beginning of string only
-        edge_name = _normalize_handle_name(edge_name)
+        # match matches beginning of string only
+        edge_name_match = re.match(r'#?([\w-]+):', relation)
+        if edge_name_match is None: continue
+        edge_name = _normalize_handle_name(edge_name_match.group(1))
         node0_idx = int(node_indices[0])
         node1_idx = int(node_indices[1])
         edges_with_indices.append((edge_name,node0_idx,node1_idx))
     print edges_with_indices
     return edges_with_indices 
 
-
-def get_edges_with_handles(entry):
-    handles = [m.group(1) for m in re.finditer('#([^ .]+)', entry['text'])]
-    edges_with_indices = _get_edges_with_handle_indices(entry)
-    edges_with_handles = []
-    for edge in edges_with_indices:
-        edge_handle =  edge[0]
-        node1_handle= _normalize_handle_name(str(handles[edge[2]]))
-        node0_handle= _normalize_handle_name(str(handles[edge[1]]))
-        edges_with_handles.append((edge_handle,node0_handle,node1_handle))
-    print edges_with_handles
-    return edges_with_handles
-
-# This function need to be re-written, currently it is ignoring all the media. 
-def get_media(entry):
-    assert len(entry['media']) == len(entry['mediamap'])
-    edge_media = ['1']
-    node0_media = ['1']
-    node1_media = ['1']
-    return (edge_media, node0_media, node1_media)
-
-
-def get_edge_props(entry):
+def _get_edge_props(json_feed):
     props = {}
     props['keywords'] = []
-    for k in entry['keywords']:
-        props['keywords'].append(str(k))
-    props['source_text'] = str(entry['source_text'])
-    props['source_url'] = str(entry['source_url'])
+    for k in json_feed['keywords']:
+        props['keywords'].append(str(k)) # in case some keywords are not strings
+    props['source_text'] = str(json_feed['source_text'])
+    props['source_url'] = str(json_feed['source_url'])
     return props
 
-
-def append_to_media(media, props):
-    if 'media' in props:
-        for m in props['media']:
-            mstr = str(m)
-            if mstr not in media:
-                media.append(mstr)
-
 def create_graph_elements(handles, media, edge_props):
-    print "Handles: ", handles
-    print "Media: ", media
-    print "Edge_props: ", edge_props
-    return 1
     session = cypher.Session(GRAPH_DB_URL)
     tx = session.create_transaction()
 
@@ -101,27 +70,48 @@ def create_graph_elements(handles, media, edge_props):
 
     tx.commit()
 
-def _get_create_concept_query(node_handle):
-    return "MERGE (c:Concept { handle: '%s' }) RETURN c" % node_handle
+def _get_create_concept_query(node_handle, u_id):
+    return "MERGE (c:Concept { id: %i, handle: '%s' }) RETURN c" % \
+            (u_id, node_handle)
 
-def _get_create_media_query(node_handle, node_idx, json_feed):
+def _get_create_media_query(node_handle, u_id, node_idx, json_feed):
     mediatype = ''
     mediapath = ''
+    node_idx_str = str(node_idx)
+    # find the first mediamap element that contains this node index
     for i, mediamap_elem in enumerate(json_feed['mediamap']):
         node_indices = set(re.findall(r'#(\d+)', mediamap_elem))
-        if node_idx in node_indices:
+        if node_idx_str in node_indices:
             mediatype = json_feed['mediatype'][i]
             mediapath = json_feed['media'][i]
             break
 
-    return "MERGE (m:Media:%s { handle: '%s', mediapath: '%s' }) RETURN m" % (mediatype.title(), node_handle[1:], mediapath)
+    return ("MERGE (m:Media:%s { id: %i, handle: '%s', mediapath: '%s' }) "
+            "RETURN m") % (mediatype.title(), u_id, node_handle, mediapath)
 
-def _add_node_to_graph(handles, node_idx, json_feed, tx):
-    node_handle = handles[node_idx]
+def _add_node_to_graph(node_handle, node_idx, json_feed, tx):
+    u_id = 0
     if (node_handle[0] != '$'):
-        tx.append(_get_create_concept_query(node_handle))
+        # u_id = get_unique_id(node_handle)
+        # tx.append(_get_create_concept_query(node_handle, u_id))
+        print _get_create_concept_query(node_handle, u_id)
     else:
-        tx.append(_get_create_media_query(node_handle, node_idx, json_feed))
+        node_handle = node_handle[1:] # strip dollar sign
+        # u_id = get_unique_id(node_handle)
+        # tx.append(_get_create_media_query(node_handle, u_id, node_idx, json_feed))
+        print _get_create_media_query(node_handle, u_id, node_idx, json_feed)
+    return u_id
+
+## TODO(arzav):
+## 1. replace handle with unique ids for querying
+## 2. add ids to edges?
+def _add_edge_to_graph(edge_name, from_node_id, to_node_id, json_feed):
+    edge_props = _get_edge_props(json_feed)
+    # get rid of '' around keys since cypher doesn't like that
+    props_str = re.sub("'(\\w+)':", r'\1:', str(edge_props))
+    return ("MATCH (from { id: %i }), (to { id: %i }) "
+            "CREATE (from)-[r:%s %s ]->(to)") % \
+            (from_node_id, to_node_id, edge_name.upper(), props_str)
 
 def add_feed_to_graph(json_feed):
     """ Public method supported in the api to add a json feed to the graph. """
@@ -131,31 +121,16 @@ def add_feed_to_graph(json_feed):
 
     handles = [_normalize_handle_name(m.group(1)) \
                         for m in re.finditer('#([^ .]+)', json_feed['text'])]
+    handle_graph_ids = []
+    for i, handle in enumerate(handles):
+        handle_graph_ids.append(_add_node_to_graph(handle, i, json_feed, tx))
+
     edges_with_indices = _get_edges_with_handle_indices(json_feed)
 
     for edge in edges_with_indices:
-        edge_name = edge[0]
-        from_node_handle = edge[1]
-        to_node_handle = edge[2]
-        _add_node_to_graph(handles, edge[1], json_feed, tx)
-        _add_node_to_graph(handles, edge[2], json_feed, tx)
+        from_node_id = handle_graph_ids[edge[1]]
+        to_node_id = handle_graph_ids[edge[2]]
+        print _add_edge_to_graph(edge[0], from_node_id, to_node_id, json_feed)
 
-        print edge
-        create_graph_elements(edge, get_media(json_feed), get_edge_props(json_feed))
-
-
-
-get_edges_with_handles({
-    'text': 'The position of a #Standing_\'human while using a #shoe is distributed as #$heatmap_12.',
-    "graphStructure": [
-      "spatially_distributed_as: #1 ->#2",
-      "spatially_distributed_as: #0 ->#2",
-      "can_use: #0 ->#1"
-    ]})
-
-get_edges_with_handles({
-    'text': "The #cup looks like #$image",
-    "graphStructure": [
-      "has_appearance: #0 ->#1",
-    ]})
+    # TODO(arzav): handle medias that are implicit/implied
 
