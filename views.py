@@ -8,7 +8,7 @@ import datetime as dt
 from py2neo import cypher
 
 GRAPH_DB_URL = "http://ec2-54-68-208-190.us-west-2.compute.amazonaws.com:7474"
-id_no = 0
+id_no = 20
 
 def _normalize_handle_name(handle):
     return re.sub("\'", "", handle).lower()
@@ -47,7 +47,6 @@ def _get_edges_with_handle_indices(json_feed):
         node0_idx = int(node_indices[0])
         node1_idx = int(node_indices[1])
         edges_with_indices.append((edge_name,node0_idx,node1_idx))
-    print edges_with_indices
     return edges_with_indices 
 
 def _get_edge_props(json_feed):
@@ -113,7 +112,7 @@ def _add_media_node_to_graph(node_handle, mediatype, mediapath, tx):
     if node_handle is None:
         node_handle = _filename_from_path(mediapath)
     u_id = _get_unique_id(node_handle)
-    # tx.append(_get_create_media_query(node_handle, u_id, node_idx, json_feed))
+    tx.append(_get_create_media_query(node_handle, u_id, mediatype, mediapath))
     print _get_create_media_query(node_handle, u_id, mediatype, mediapath)
     return u_id
 
@@ -122,7 +121,7 @@ def _add_node_to_graph(node_handle, node_idx, json_feed, tx):
     u_id = 0
     if (node_handle[0] != '$'):
         u_id = _get_unique_id(node_handle)
-        # tx.append(_get_create_concept_query(node_handle, u_id))
+        tx.append(_get_create_concept_query(node_handle, u_id))
         print _get_create_concept_query(node_handle, u_id)
     else:
         node_handle = node_handle[1:] # strip dollar sign
@@ -130,14 +129,13 @@ def _add_node_to_graph(node_handle, node_idx, json_feed, tx):
         u_id = _add_media_node_to_graph(node_handle, mediatype, mediapath, tx)
     return u_id
 
-## TODO(arzav):
-## 2. add ids to edges?
-def _add_edge_to_graph(edge_name, from_node_id, to_node_id, edge_props):
+def _add_edge_to_graph(edge_name, from_node_id, to_node_id, edge_props, tx):
     # get rid of '' around keys since cypher doesn't like that
     props_str = re.sub("'(\\w+)':", r'\1:', str(edge_props))
-    return ("MATCH (from { id: %i }), (to { id: %i }) "
+    return tx.append(
+            ("MATCH (from { id: %i }), (to { id: %i }) "
             "CREATE (from)-[r:%s %s ]->(to)") % \
-            (from_node_id, to_node_id, edge_name.upper(), props_str)
+            (from_node_id, to_node_id, edge_name.upper(), props_str))
 
 def add_feed_to_graph(json_feed):
     """ Public method supported in the api to add a json feed to the graph. """
@@ -159,7 +157,7 @@ def add_feed_to_graph(json_feed):
     for edge in edges_with_indices:
         from_node_id = handle_graph_ids[edge[1]]
         to_node_id = handle_graph_ids[edge[2]]
-        print _add_edge_to_graph(edge[0], from_node_id, to_node_id, edge_props)
+        _add_edge_to_graph(edge[0], from_node_id, to_node_id, edge_props, tx)
 
     # Add remaining media nodes and edges to graph
     media_handle_set = set(
@@ -170,9 +168,9 @@ def add_feed_to_graph(json_feed):
             media_node_id = _add_media_node_to_graph(
                     None, json_feed['mediatype'][i], json_feed['media'][i], tx)
             for node_idx in related_nodes_set:
-                print _add_edge_to_graph('has_media', handle_graph_ids[int(node_idx)], 
-                                    media_node_id, edge_props)
-    # tx.commit()
+                _add_edge_to_graph('has_media', handle_graph_ids[int(node_idx)], 
+                                    media_node_id, edge_props, tx)
+    tx.commit()
 
 
 add_feed_to_graph({
