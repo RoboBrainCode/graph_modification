@@ -4,9 +4,11 @@ import sys
 import json
 import re
 import ntpath
+import datetime as dt
 from py2neo import cypher
 
 GRAPH_DB_URL = "http://ec2-54-68-208-190.us-west-2.compute.amazonaws.com:7474"
+id_no = 0
 
 def _normalize_handle_name(handle):
     return re.sub("\'", "", handle).lower()
@@ -14,6 +16,17 @@ def _normalize_handle_name(handle):
 def _filename_from_path(path):
     head, tail = ntpath.split(path)
     return tail or ntpath.basename(head)
+
+def _get_timestamp():
+    epoch = dt.datetime.utcfromtimestamp(0)
+    return int((dt.datetime.now() - epoch).total_seconds() * 1000)
+
+def _get_unique_id(node_handle):
+    # return _get_timestamp()
+    global id_no
+    u_id = id_no
+    id_no += 1
+    return u_id
 
 def _get_edges_with_handle_indices(json_feed):
     """ Returns array of tuples of the form (edge_name, 1, 2) where
@@ -99,7 +112,7 @@ def _get_create_media_query(node_handle, u_id, mediatype, mediapath):
 def _add_media_node_to_graph(node_handle, mediatype, mediapath, tx):
     if node_handle is None:
         node_handle = _filename_from_path(mediapath)
-    u_id = 0 # get_unique_id(node_handle)
+    u_id = _get_unique_id(node_handle)
     # tx.append(_get_create_media_query(node_handle, u_id, node_idx, json_feed))
     print _get_create_media_query(node_handle, u_id, mediatype, mediapath)
     return u_id
@@ -108,7 +121,7 @@ def _add_media_node_to_graph(node_handle, mediatype, mediapath, tx):
 def _add_node_to_graph(node_handle, node_idx, json_feed, tx):
     u_id = 0
     if (node_handle[0] != '$'):
-        # u_id = get_unique_id(node_handle)
+        u_id = _get_unique_id(node_handle)
         # tx.append(_get_create_concept_query(node_handle, u_id))
         print _get_create_concept_query(node_handle, u_id)
     else:
@@ -118,7 +131,6 @@ def _add_node_to_graph(node_handle, node_idx, json_feed, tx):
     return u_id
 
 ## TODO(arzav):
-## 1. replace handle with unique ids for querying
 ## 2. add ids to edges?
 def _add_edge_to_graph(edge_name, from_node_id, to_node_id, edge_props):
     # get rid of '' around keys since cypher doesn't like that
@@ -130,9 +142,8 @@ def _add_edge_to_graph(edge_name, from_node_id, to_node_id, edge_props):
 def add_feed_to_graph(json_feed):
     """ Public method supported in the api to add a json feed to the graph. """
     
-    # session = cypher.Session(GRAPH_DB_URL)
-    # tx = session.create_transaction()
-    tx = []
+    session = cypher.Session(GRAPH_DB_URL)
+    tx = session.create_transaction()
 
     handles = [_normalize_handle_name(m.group(1)) \
                         for m in re.finditer('#([^ .]+)', json_feed['text'])]
@@ -162,3 +173,81 @@ def add_feed_to_graph(json_feed):
                 print _add_edge_to_graph('has_media', handle_graph_ids[int(node_idx)], 
                                     media_node_id, edge_props)
     # tx.commit()
+
+
+add_feed_to_graph({
+    "feedtype": "Object Affordance",
+    "text": "The position of a #Standing_human while using a #shoe is distributed as #$heatmap_12.",
+    "source_text": "Hallucinating Humans",
+    "source_url": "http://pr.cs.cornell.edu/hallucinatinghumans/",
+    "mediashow": [
+      "True",
+      "True"
+    ],
+    "media": [
+      "/home/ozan/ilcrf/images/shoe_.jpg",
+      "/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg"
+    ],
+    "mediatype": [
+      "Image",
+      "image",
+    ],
+    "keywords": [
+      "Human",
+      "Affordance",
+      "Object",
+      "shoe",
+      "Standing"
+    ],
+    "mediamap": [
+      "#1",
+      "#0#1#2"
+    ],
+    "graphStructure": [
+      "#spatially_distributed_as: #1 ->#2",
+      "#spatially_distributed_as: #0 ->#2",
+      "can_use: #0 ->#1"
+    ],
+})
+
+print '------------------'
+
+add_feed_to_graph({
+    "username": "hemakoppula",
+    "feedtype": "Object Affordance",
+    "mediashow": [
+        "True",
+        "True"
+    ],
+    "text": "The #sitting_human can #wear a #cap as shown in #$heatmap_1.",
+    "created_at": "2014-09-23T01:34:10.187000",
+    "hashtags": " sitting_human wear cap $heatmap_1.",
+    "mediatype": [
+        "Image",
+        "Image"
+    ],
+    "source_url": "http://pr.cs.cornell.edu/anticipation/",
+    "source_text": "Anticipation",
+    "mediamap": [
+        "#0#2",
+        "#1#3"
+    ],
+    "media": [
+        "hemakoppula/png/sitting_human/wear/cap/heatmap_1/cutting_frame.png",
+        "hemakoppula/png/sitting_human/wear/cap/heatmap_1/cutting_result.png"
+    ],
+    "keywords": [
+        "Human",
+        "Affordance",
+        "Object",
+        "Cap"
+    ],
+    "upvotes": 0,
+    "_id": "5420ce1242499173ddd83032",
+    "graphStructure": [
+        "can_perform_action: #0 ->#1",
+        "can_use: #0 ->#2",
+        "is_trajectory_of: #2 ->#3",
+        "is_trajectory_of: #1 ->#3"
+    ]
+})
