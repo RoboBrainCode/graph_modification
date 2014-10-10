@@ -3,12 +3,17 @@
 import sys
 import json
 import re
+import ntpath
 from py2neo import cypher
 
 GRAPH_DB_URL = "http://ec2-54-68-208-190.us-west-2.compute.amazonaws.com:7474"
 
 def _normalize_handle_name(handle):
     return re.sub("\'", "", handle).lower()
+
+def _filename_from_path(path):
+    head, tail = ntpath.split(path)
+    return tail or ntpath.basename(head)
 
 def _get_edges_with_handle_indices(json_feed):
     """ Returns array of tuples of the form (edge_name, 1, 2) where
@@ -71,10 +76,9 @@ def create_graph_elements(handles, media, edge_props):
     tx.commit()
 
 def _get_create_concept_query(node_handle, u_id):
-    return "MERGE (c:Concept { id: %i, handle: '%s' }) RETURN c" % \
-            (u_id, node_handle)
+    return "MERGE (c:Concept { id: %i, handle: '%s' })" % (u_id, node_handle)
 
-def _get_create_media_query(node_handle, u_id, node_idx, json_feed):
+def _get_media_type_path(node_idx, json_feed):
     mediatype = ''
     mediapath = ''
     node_idx_str = str(node_idx)
@@ -86,8 +90,20 @@ def _get_create_media_query(node_handle, u_id, node_idx, json_feed):
             mediapath = json_feed['media'][i]
             break
 
-    return ("MERGE (m:Media:%s { id: %i, handle: '%s', mediapath: '%s' }) "
-            "RETURN m") % (mediatype.title(), u_id, node_handle, mediapath)
+    return (mediatype, mediapath)
+
+def _get_create_media_query(node_handle, u_id, mediatype, mediapath):
+    return ("MERGE (m:Media:%s { id: %i, handle: '%s', mediapath: '%s' })") % \
+            (mediatype.title(), u_id, node_handle, mediapath)
+
+def _add_media_node_to_graph(node_handle, mediatype, mediapath, tx):
+    if node_handle is None:
+        node_handle = _filename_from_path(mediapath)
+    u_id = 0 # get_unique_id(node_handle)
+    # tx.append(_get_create_media_query(node_handle, u_id, node_idx, json_feed))
+    print _get_create_media_query(node_handle, u_id, mediatype, mediapath)
+    return u_id
+
 
 def _add_node_to_graph(node_handle, node_idx, json_feed, tx):
     u_id = 0
@@ -97,16 +113,14 @@ def _add_node_to_graph(node_handle, node_idx, json_feed, tx):
         print _get_create_concept_query(node_handle, u_id)
     else:
         node_handle = node_handle[1:] # strip dollar sign
-        # u_id = get_unique_id(node_handle)
-        # tx.append(_get_create_media_query(node_handle, u_id, node_idx, json_feed))
-        print _get_create_media_query(node_handle, u_id, node_idx, json_feed)
+        mediatype, mediapath = _get_media_type_path(node_idx, json_feed)
+        u_id = _add_media_node_to_graph(node_handle, mediatype, mediapath, tx)
     return u_id
 
 ## TODO(arzav):
 ## 1. replace handle with unique ids for querying
 ## 2. add ids to edges?
-def _add_edge_to_graph(edge_name, from_node_id, to_node_id, json_feed):
-    edge_props = _get_edge_props(json_feed)
+def _add_edge_to_graph(edge_name, from_node_id, to_node_id, edge_props):
     # get rid of '' around keys since cypher doesn't like that
     props_str = re.sub("'(\\w+)':", r'\1:', str(edge_props))
     return ("MATCH (from { id: %i }), (to { id: %i }) "
@@ -116,21 +130,35 @@ def _add_edge_to_graph(edge_name, from_node_id, to_node_id, json_feed):
 def add_feed_to_graph(json_feed):
     """ Public method supported in the api to add a json feed to the graph. """
     
-    session = cypher.Session(GRAPH_DB_URL)
-    tx = session.create_transaction()
+    # session = cypher.Session(GRAPH_DB_URL)
+    # tx = session.create_transaction()
+    tx = []
 
     handles = [_normalize_handle_name(m.group(1)) \
                         for m in re.finditer('#([^ .]+)', json_feed['text'])]
+    # Add nodes to graph
     handle_graph_ids = []
     for i, handle in enumerate(handles):
         handle_graph_ids.append(_add_node_to_graph(handle, i, json_feed, tx))
 
     edges_with_indices = _get_edges_with_handle_indices(json_feed)
+    edge_props = _get_edge_props(json_feed)
 
+    # Add edges to graph
     for edge in edges_with_indices:
         from_node_id = handle_graph_ids[edge[1]]
         to_node_id = handle_graph_ids[edge[2]]
-        print _add_edge_to_graph(edge[0], from_node_id, to_node_id, json_feed)
+        print _add_edge_to_graph(edge[0], from_node_id, to_node_id, edge_props)
 
-    # TODO(arzav): handle medias that are implicit/implied
-
+    # Add remaining media nodes and edges to graph
+    media_handle_set = set(
+        [str(i) for i, handle in enumerate(handles) if handle[0] == '$'])
+    for i, media_relation in enumerate(json_feed['mediamap']):
+        related_nodes_set = set(re.findall(r'#(\d+)', media_relation))
+        if len(media_handle_set & related_nodes_set) == 0: # #$ already handled
+            media_node_id = _add_media_node_to_graph(
+                    None, json_feed['mediatype'][i], json_feed['media'][i], tx)
+            for node_idx in related_nodes_set:
+                print _add_edge_to_graph('has_media', handle_graph_ids[int(node_idx)], 
+                                    media_node_id, edge_props)
+    # tx.commit()
