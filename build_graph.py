@@ -19,5 +19,8 @@ def main(args):
         feed['created_at'] = feed['created_at'].isoformat()
         add_feed_to_graph(feed)
 
+    print "Processed %i feeds" % all_feeds.count()
+    all_feeds.close()
+
 if __name__ == "__main__":
     main(sys.argv)
