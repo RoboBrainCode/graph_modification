@@ -6,13 +6,28 @@ import re
 import ntpath
 import datetime as dt
 import hashlib
+import ConfigParser
+import os
 from py2neo import cypher
 
-# GRAPH_DB_URL = "http://ec2-54-68-208-190.us-west-2.compute.amazonaws.com:7474"
+sys.path.append(os.path.abspath('../learning_plugins'))
+from lemmatizer import lemmatize
+import spellcheck
+
 GRAPH_DB_URL = "http://ec2-54-69-173-124.us-west-2.compute.amazonaws.com:7474"
+# GRAPH_DB_URL = "http://ec2-54-187-76-157.us-west-2.compute.amazonaws.com:7474"
+CONFIG = ConfigParser.ConfigParser()
+CONFIG.read(os.path.expanduser('./config.ini'))
+NormalizationSection = 'HandleNameNormalizations'
 
 def _normalize_handle_name(handle):
-    return re.sub("\'", "", handle).lower()
+    normHandle = re.sub("\'", "", handle)
+    if CONFIG.getboolean(NormalizationSection, 'spellcheck'):
+        normHandle = spellcheck.correct(normHandle)
+    normHandle = normHandle.lower().strip()
+    if CONFIG.getboolean(NormalizationSection, 'lemmatize'):
+        normHandle = lemmatize(normHandle)
+    return normHandle.encode('utf8')
 
 def _filename_from_path(path):
     head, tail = ntpath.split(path)
@@ -113,7 +128,7 @@ def add_feed_to_graph(json_feed):
     tx = session.create_transaction()
 
     handles = [_normalize_handle_name(m.group(1)) \
-                        for m in re.finditer('#([^ .]+)', json_feed['text'])]
+                for m in re.finditer('#([^ .]+)', json_feed['text'])]
     # Add nodes to graph
     handle_graph_ids = []
     for i, handle in enumerate(handles):
