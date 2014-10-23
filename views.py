@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 import sys
-import json
 import re
 import ntpath
 import datetime as dt
@@ -21,6 +20,7 @@ CONFIG.read(os.path.expanduser('./config.ini'))
 NormalizationSection = 'HandleNameNormalizations'
 
 def _normalize_handle_name(handle):
+    if handle == None or len(handle) == 0: return handle
     normHandle = re.sub("\'", "", handle)
     if CONFIG.getboolean(NormalizationSection, 'spellcheck'):
         normHandle = spellcheck.correct(normHandle)
