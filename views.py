@@ -13,8 +13,7 @@ sys.path.append(os.path.abspath('../learning_plugins'))
 from lemmatizer import lemmatize
 import spellcheck
 
-GRAPH_DB_URL = "http://ec2-54-69-173-124.us-west-2.compute.amazonaws.com:7474"
-# GRAPH_DB_URL = "http://ec2-54-187-76-157.us-west-2.compute.amazonaws.com:7474"
+GRAPH_DB_URL = "http://ec2-54-187-76-157.us-west-2.compute.amazonaws.com:7474"
 CONFIG = ConfigParser.ConfigParser()
 CONFIG.read(os.path.expanduser('./config.ini'))
 NormalizationSection = 'HandleNameNormalizations'
