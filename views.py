@@ -20,10 +20,9 @@ NormalizationSection = 'HandleNameNormalizations'
 
 def _normalize_handle_name(handle):
     if handle == None or len(handle) == 0: return handle
-    normHandle = re.sub("\'", "", handle)
     if CONFIG.getboolean(NormalizationSection, 'spellcheck'):
-        normHandle = spellcheck.correct(normHandle)
-    normHandle = normHandle.lower().strip()
+        normHandle = spellcheck.correct(handle)
+    normHandle = re.sub("[\'\"]", "", normHandle).strip().lower()
     if CONFIG.getboolean(NormalizationSection, 'lemmatize'):
         normHandle = lemmatize(normHandle)
     return normHandle.encode('utf8')
