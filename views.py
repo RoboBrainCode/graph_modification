@@ -21,8 +21,9 @@ NormalizationSection = 'HandleNameNormalizations'
 
 def _normalize_handle_name(handle):
     if handle == None or len(handle) == 0: return handle
+    normHandle = handle
     if CONFIG.getboolean(NormalizationSection, 'spellcheck'):
-        normHandle = spellcheck.correct(handle)
+        normHandle = spellcheck.correct(normHandle)
     normHandle = re.sub("[\'\"]", "", normHandle).strip().lower()
     if CONFIG.getboolean(NormalizationSection, 'lemmatize'):
         normHandle = lemmatize(normHandle)
