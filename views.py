@@ -11,12 +11,12 @@ from py2neo import cypher
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + 
                 '/../learning_plugins')
-from lemmatizer import lemmatize
+# from lemmatizer import lemmatize
 import spellcheck
 
 GRAPH_DB_URL = "http://ec2-54-187-76-157.us-west-2.compute.amazonaws.com:7474"
 CONFIG = ConfigParser.ConfigParser()
-CONFIG.read('./config.ini')
+CONFIG.read(os.path.dirname(os.path.abspath(__file__)) + '/config.ini')
 NormalizationSection = 'HandleNameNormalizations'
 
 def _normalize_handle_name(handle):
@@ -25,8 +25,8 @@ def _normalize_handle_name(handle):
     if CONFIG.getboolean(NormalizationSection, 'spellcheck'):
         normHandle = spellcheck.correct(normHandle)
     normHandle = re.sub("[\'\"]", "", normHandle).strip().lower()
-    if CONFIG.getboolean(NormalizationSection, 'lemmatize'):
-        normHandle = lemmatize(normHandle)
+    # if CONFIG.getboolean(NormalizationSection, 'lemmatize'):
+    #     normHandle = lemmatize(normHandle)
     return normHandle.encode('utf8')
 
 def _filename_from_path(path):
