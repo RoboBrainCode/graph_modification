@@ -71,9 +71,12 @@ def _get_edge_props(json_feed):
     props['source_url'] = str(json_feed['source_url'])
     return props
 
-def _get_create_concept_query(node_handle, u_id):
+def _get_create_concept_query(node_handle, u_id, feed_id):
     return ("MERGE (c:Concept { handle: '%s' }) "
-            "ON CREATE SET c.id = %i") % (node_handle, u_id)
+            "ON CREATE SET c.id = %i, c.created_at = timestamp(), "
+            "c.feed_ids = ['%s'] "
+            "ON MATCH SET c.feed_ids = c.feed_ids + ['%s']") % \
+            (node_handle, u_id, feed_id, feed_id)
 
 def _get_media_type_path(node_idx, json_feed):
     mediatype = ''
@@ -89,37 +92,48 @@ def _get_media_type_path(node_idx, json_feed):
 
     return (mediatype, mediapath)
 
-def _get_create_media_query(node_handle, u_id, mediatype, mediapath):
+def _get_create_media_query(node_handle, u_id, mediatype, mediapath, feed_id):
     return ("MERGE (m:Media:%s { handle: '%s', mediapath: '%s' }) "
-            "ON CREATE SET m.id = %i") % \
-            (mediatype.title(), node_handle, mediapath, u_id)
+            "ON CREATE SET m.id = %i, m.created_at = timestamp(), "
+            "m.feed_ids = ['%s'] "
+            "ON MATCH SET m.feed_ids = m.feed_ids + ['%s']") % \
+            (mediatype.title(), node_handle, mediapath, u_id, feed_id, feed_id)
 
-def _add_media_node_to_graph(node_handle, mediatype, mediapath, tx):
+def _add_media_node_to_graph(node_handle, mediatype, mediapath, feed_id, tx):
     if node_handle is None:
         node_handle = _filename_from_path(mediapath)
     u_id = _get_unique_id(node_handle)
-    tx.append(_get_create_media_query(node_handle, u_id, mediatype, mediapath))
+    tx.append(
+        _get_create_media_query(
+            node_handle, u_id, mediatype, mediapath, feed_id
+        )
+    )
     return u_id
 
 
 def _add_node_to_graph(node_handle, node_idx, json_feed, tx):
     u_id = 0
+    feed_id = json_feed['_id']
     if (node_handle[0] != '$'):
         u_id = _get_unique_id(node_handle)
-        tx.append(_get_create_concept_query(node_handle, u_id))
+        tx.append(_get_create_concept_query(node_handle, u_id, feed_id))
     else:
         node_handle = node_handle[1:] # strip dollar sign
         mediatype, mediapath = _get_media_type_path(node_idx, json_feed)
-        u_id = _add_media_node_to_graph(node_handle, mediatype, mediapath, tx)
+        u_id = _add_media_node_to_graph(
+            node_handle, mediatype, mediapath, feed_id, tx)
     return u_id
 
-def _add_edge_to_graph(edge_name, from_node_id, to_node_id, edge_props, tx):
+def _add_edge_to_graph(edge_name, from_node_id, to_node_id, edge_props, feed_id, tx):
     # get rid of '' around keys since cypher doesn't like that
     props_str = re.sub("'(\\w+)':", r'\1:', str(edge_props))
     tx.append((
         "MATCH (from { id: %i }), (to { id: %i }) "
-        "MERGE (from)-[r:%s %s ]->(to)") % \
-        (from_node_id, to_node_id, edge_name.upper(), props_str))
+        "MERGE (from)-[r:%s %s ]->(to) "
+        "ON CREATE SET r.created_at = timestamp(), r.feed_ids = ['%s'] "
+        "ON MATCH SET r.feed_ids = r.feed_ids + ['%s']") % \
+        (from_node_id, to_node_id, edge_name.upper(), props_str, feed_id, feed_id)
+    )
 
 def add_feed_to_graph(json_feed):
     """ Public method supported in the api to add a json feed to the graph. """
@@ -136,12 +150,14 @@ def add_feed_to_graph(json_feed):
 
     edges_with_indices = _get_edges_with_handle_indices(json_feed)
     edge_props = _get_edge_props(json_feed)
+    feed_id = json_feed['_id']
 
     # Add edges to graph
     for edge in edges_with_indices:
         from_node_id = handle_graph_ids[edge[1]]
         to_node_id = handle_graph_ids[edge[2]]
-        _add_edge_to_graph(edge[0], from_node_id, to_node_id, edge_props, tx)
+        _add_edge_to_graph(
+            edge[0], from_node_id, to_node_id, edge_props, feed_id, tx)
 
     # Add remaining media nodes and edges to graph
     media_handle_set = set(
@@ -150,8 +166,9 @@ def add_feed_to_graph(json_feed):
         related_nodes_set = set(re.findall(r'#(\d+)', media_relation))
         if len(media_handle_set & related_nodes_set) == 0: # #$ already handled
             media_node_id = _add_media_node_to_graph(
-                    None, json_feed['mediatype'][i], json_feed['media'][i], tx)
+                    None, json_feed['mediatype'][i], json_feed['media'][i], 
+                    feed_id, tx)
             for node_idx in related_nodes_set:
                 _add_edge_to_graph('has_media', handle_graph_ids[int(node_idx)], 
-                                    media_node_id, edge_props, tx)
+                                    media_node_id, edge_props, feed_id, tx)
     tx.commit()
