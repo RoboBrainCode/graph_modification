@@ -13,14 +13,18 @@ def main(args):
     db = client[DBNAME]
     json_feeds = db['json_feeds']
     all_feeds = json_feeds.find()
+    count = 0
 
-    for feed in all_feeds:
-        feed['_id'] = feed['_id'].__str__()
-        feed['created_at'] = feed['created_at'].isoformat()
-        add_feed_to_graph(feed)
+    try:
+        for feed in all_feeds:
+            feed['_id'] = feed['_id'].__str__()
+            feed['created_at'] = feed['created_at'].isoformat()
+            add_feed_to_graph(feed)
+            count += 1
 
-    print "Processed %i feeds" % all_feeds.count()
-    all_feeds.close()
+    finally:
+        print "%i/%i feeds added to graph" % (count, all_feeds.count())
+        all_feeds.close()
 
 if __name__ == "__main__":
     main(sys.argv)
