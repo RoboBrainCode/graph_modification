@@ -15,6 +15,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
 import spellcheck
 
 GRAPH_DB_URL = "http://ec2-54-187-76-157.us-west-2.compute.amazonaws.com:7474"
+tx = cypher.Session(GRAPH_DB_URL).create_transaction()
+
 CONFIG = ConfigParser.ConfigParser()
 CONFIG.read(os.path.dirname(os.path.abspath(__file__)) + '/config.ini')
 NormalizationSection = 'HandleNameNormalizations'
@@ -99,11 +101,11 @@ def _get_create_media_query(node_handle, u_id, mediatype, mediapath, feed_id):
             "ON MATCH SET m.feed_ids = m.feed_ids + ['%s']") % \
             (mediatype.title(), node_handle, mediapath, u_id, feed_id, feed_id)
 
-def _add_media_node_to_graph(node_handle, mediatype, mediapath, feed_id, tx):
+def _add_media_node_to_graph(node_handle, mediatype, mediapath, feed_id, q):
     if node_handle is None:
         node_handle = _filename_from_path(mediapath)
     u_id = _get_unique_id(node_handle)
-    tx.append(
+    q.append(
         _get_create_media_query(
             node_handle, u_id, mediatype, mediapath, feed_id
         )
@@ -111,23 +113,23 @@ def _add_media_node_to_graph(node_handle, mediatype, mediapath, feed_id, tx):
     return u_id
 
 
-def _add_node_to_graph(node_handle, node_idx, json_feed, tx):
+def _add_node_to_graph(node_handle, node_idx, json_feed, q):
     u_id = 0
     feed_id = json_feed['_id']
     if (node_handle[0] != '$'):
         u_id = _get_unique_id(node_handle)
-        tx.append(_get_create_concept_query(node_handle, u_id, feed_id))
+        q.append(_get_create_concept_query(node_handle, u_id, feed_id))
     else:
         node_handle = node_handle[1:] # strip dollar sign
         mediatype, mediapath = _get_media_type_path(node_idx, json_feed)
         u_id = _add_media_node_to_graph(
-            node_handle, mediatype, mediapath, feed_id, tx)
+            node_handle, mediatype, mediapath, feed_id, q)
     return u_id
 
-def _add_edge_to_graph(edge_name, from_node_id, to_node_id, edge_props, feed_id, tx):
+def _add_edge_to_graph(edge_name, from_node_id, to_node_id, edge_props, feed_id, q):
     # get rid of '' around keys since cypher doesn't like that
     props_str = re.sub("'(\\w+)':", r'\1:', str(edge_props))
-    tx.append((
+    q.append((
         "MATCH (from { id: %i }), (to { id: %i }) "
         "MERGE (from)-[r:%s %s ]->(to) "
         "ON CREATE SET r.created_at = timestamp(), r.feed_ids = ['%s'] "
@@ -137,16 +139,14 @@ def _add_edge_to_graph(edge_name, from_node_id, to_node_id, edge_props, feed_id,
 
 def add_feed_to_graph(json_feed):
     """ Public method supported in the api to add a json feed to the graph. """
-    
-    session = cypher.Session(GRAPH_DB_URL)
-    tx = session.create_transaction()
 
+    q = [] # queries to execute
     handles = [_normalize_handle_name(m.group(1)) \
                 for m in re.finditer('#([^ .]+)', json_feed['text'])]
     # Add nodes to graph
     handle_graph_ids = []
     for i, handle in enumerate(handles):
-        handle_graph_ids.append(_add_node_to_graph(handle, i, json_feed, tx))
+        handle_graph_ids.append(_add_node_to_graph(handle, i, json_feed, q))
 
     edges_with_indices = _get_edges_with_handle_indices(json_feed)
     edge_props = _get_edge_props(json_feed)
@@ -157,7 +157,7 @@ def add_feed_to_graph(json_feed):
         from_node_id = handle_graph_ids[edge[1]]
         to_node_id = handle_graph_ids[edge[2]]
         _add_edge_to_graph(
-            edge[0], from_node_id, to_node_id, edge_props, feed_id, tx)
+            edge[0], from_node_id, to_node_id, edge_props, feed_id, q)
 
     # Add remaining media nodes and edges to graph
     media_handle_set = set(
@@ -167,8 +167,12 @@ def add_feed_to_graph(json_feed):
         if len(media_handle_set & related_nodes_set) == 0: # #$ already handled
             media_node_id = _add_media_node_to_graph(
                     None, json_feed['mediatype'][i], json_feed['media'][i], 
-                    feed_id, tx)
+                    feed_id, q)
             for node_idx in related_nodes_set:
                 _add_edge_to_graph('has_media', handle_graph_ids[int(node_idx)], 
-                                    media_node_id, edge_props, feed_id, tx)
+                                    media_node_id, edge_props, feed_id, q)
+
+    for query in q:
+        tx.append(query)
     tx.commit()
+    
