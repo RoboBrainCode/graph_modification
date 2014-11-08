@@ -135,11 +135,15 @@ def _add_edge_to_graph(edge_name, from_node_id, to_node_id, edge_props, feed_id,
         (from_node_id, to_node_id, edge_name.upper(), props_str, feed_id, feed_id)
     )
 
-def add_feed_to_graph(json_feed):
-    """ Public method supported in the api to add a json feed to the graph. """
-    
-    session = cypher.Session(GRAPH_DB_URL)
-    tx = session.create_transaction()
+def append_cypher_queries(json_feed, tx):
+    """
+    Public method supported in the api to add a json feed to the graph.
+
+    @param json_feed: the json feed received through the api
+    @param tx: a cypher transaction object or a list to which new cypher queries
+    must be appended. These cypher queries are responsible for adding the 
+    json_feed to the graph.
+    """
 
     handles = [_normalize_handle_name(m.group(1)) \
                 for m in re.finditer('#([^ .]+)', json_feed['text'])]
@@ -171,4 +175,15 @@ def add_feed_to_graph(json_feed):
             for node_idx in related_nodes_set:
                 _add_edge_to_graph('has_media', handle_graph_ids[int(node_idx)], 
                                     media_node_id, edge_props, feed_id, tx)
+
+def add_feed_to_graph(json_feed):
+    """ Public method supported in the api to add a json feed to the graph in
+    an online fashion. """
+
+    queries = []
+    append_cypher_queries(json_feed, queries)
+    session = cypher.Session(GRAPH_DB_URL)
+    tx = session.create_transaction()
+    for query in queries:
+        tx.append(query)
     tx.commit()
