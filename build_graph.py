@@ -13,6 +13,12 @@ GRAPH_DB_DATA_URL = "http://ec2-54-187-76-157.us-west-2.compute.amazonaws.com:74
 GRAPH_DB = neo4j.GraphDatabaseService(GRAPH_DB_DATA_URL)
 WRITE_BATCH = neo4j.WriteBatch(GRAPH_DB)
 
+def send_batch_to_graph(queries):
+    for query in queries:
+        WRITE_BATCH.append_cypher(query)
+    WRITE_BATCH.run()
+    WRITE_BATCH.clear()
+
 def main():
     client = pm.MongoClient(HOST, PORT)
     db = client[DBNAME]
@@ -28,11 +34,11 @@ def main():
             append_cypher_queries(feed, queries)
             count += 1
             if count % BATCH_SIZE == 0:
-                for query in queries:
-                    WRITE_BATCH.append_cypher(query)
-                WRITE_BATCH.run()
-                WRITE_BATCH.clear()
+                send_batch_to_graph(queries)
                 queries = []
+
+        if len(queries) != 0:
+            send_batch_to_graph(queries)
 
     finally:
         print "%i/%i feeds added to graph" % (count, all_feeds.count())
