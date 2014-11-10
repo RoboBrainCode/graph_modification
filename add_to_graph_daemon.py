@@ -7,14 +7,13 @@ from views import add_feed_to_graph
 
 conn = boto.sqs.connect_to_region(
     "us-west-2", 
-    aws_access_key_id='<aws access key>', 
-    aws_secret_access_key='<aws secret key>')
+    aws_access_key_id='AKIAIDKZIEN24AUR7CJA', 
+    aws_secret_access_key='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')
 
 feed_queue = conn.create_queue('feed_queue')
 feed_queue.set_message_class(RawMessage)
 
-NUM_HOURS_TO_POLL = 1
-NUM_SECONDS_TO_POLL = NUM_HOURS_TO_POLL * 60 * 60
+NUM_SECONDS_TO_POLL = 20
 MSG_BATCH_SIZE = 10
 
 def main():
