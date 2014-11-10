@@ -3,7 +3,7 @@
 import pymongo as pm
 from views import append_cypher_queries
 from py2neo import neo4j
-import sys
+import sys, traceback
 
 HOST = 'ec2-54-69-241-26.us-west-2.compute.amazonaws.com'
 DBNAME = 'backend_test_deploy'
@@ -31,12 +31,21 @@ def main():
         for feed in all_feeds:
             feed['_id'] = feed['_id'].__str__()
             feed['created_at'] = feed['created_at'].isoformat()
-            append_cypher_queries(feed, queries)
-            count += 1
-            if count % BATCH_SIZE == 0:
-                send_batch_to_graph(queries)
-                queries = []
+            temp_queries = []
 
+            try:
+                append_cypher_queries(feed, temp_queries)
+            except Exception, e:
+                print traceback.format_exc()
+                print feed
+            else:
+                count += 1
+                for q in temp_queries:
+                    queries.append(q)
+                if count % BATCH_SIZE == 0:
+                    send_batch_to_graph(queries)
+                    queries = []
+            
         if len(queries) != 0:
             send_batch_to_graph(queries)
 
