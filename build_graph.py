@@ -24,7 +24,10 @@ def main():
     db = client[DBNAME]
     json_feeds = db['json_feeds']
     all_feeds = json_feeds.find(timeout=False)
-    count = 0
+    # To stop at a certain number of feeds even though feeds may be added during
+    # build process:
+    maxFeedsToAdd = all_feeds.count()
+    count, errorCount = 0, 0
     queries = []
 
     try:
@@ -38,6 +41,7 @@ def main():
             except Exception, e:
                 print traceback.format_exc()
                 print feed
+                errorCount += 1
             else:
                 count += 1
                 for q in temp_queries:
@@ -45,12 +49,17 @@ def main():
                 if count % BATCH_SIZE == 0:
                     send_batch_to_graph(queries)
                     queries = []
+                    print "%i feeds added to graph so far" % count
+                if (count + errorCount) == maxFeedsToAdd:
+                    break
             
         if len(queries) != 0:
             send_batch_to_graph(queries)
 
     finally:
-        print "%i/%i feeds added to graph" % (count, all_feeds.count())
+        print "%i/%i feeds should have been added to the graph" % (maxFeedsToAdd, all_feeds.count())
+        print "%i/%i feeds actually added to the graph" % (count, maxFeedsToAdd)
+        print "%i/%i feeds contained errors" % (errorCount, maxFeedsToAdd)
         all_feeds.close()
 
 if __name__ == "__main__":
