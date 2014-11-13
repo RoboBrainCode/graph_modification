@@ -2,6 +2,7 @@
 
 import boto
 import json
+import pymongo as pm
 from boto.sqs.message import RawMessage
 from views import add_feed_to_graph
 
@@ -12,6 +13,13 @@ conn = boto.sqs.connect_to_region(
 
 feed_queue = conn.create_queue('feed_queue')
 feed_queue.set_message_class(RawMessage)
+
+HOST = 'ec2-54-69-241-26.us-west-2.compute.amazonaws.com'
+DBNAME = 'backend_test_deploy'
+PORT = 27017
+client = pm.MongoClient(HOST, PORT)
+db = client[DBNAME]
+json_feeds = db['json_feeds']
 
 NUM_SECONDS_TO_POLL = 20
 MSG_BATCH_SIZE = 10
