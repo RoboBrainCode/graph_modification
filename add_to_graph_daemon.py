@@ -42,7 +42,8 @@ def main():
 
         if len(queries) > 0:
             submit_batch(queries, feeds_to_update)
-        feed_queue.delete_message_batch(messages)
+        if len(messages) > 0:
+            feed_queue.delete_message_batch(messages)
 
 if __name__ == '__main__':
     main()
