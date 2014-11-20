@@ -62,6 +62,9 @@ def main():
             if len(messages) > 0:
                 feed_queue.delete_message_batch(messages)
 
+    except Exception, e:
+        print traceback.format_exc()
+
     finally:
         os.unlink(PIDFILE)
 
