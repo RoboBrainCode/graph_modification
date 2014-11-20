@@ -22,7 +22,7 @@ def main(args):
     count, errorCount = 0, 0
     queries = []
     feeds_to_update = []
-    import pdb; pdb.set_trace()
+
     try:
         for feed in all_feeds:
             feed['_id'] = feed['_id'].__str__()

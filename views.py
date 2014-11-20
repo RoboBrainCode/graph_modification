@@ -75,8 +75,10 @@ def _get_create_concept_query(node_handle, u_id, feed_id):
     return ("MERGE (c:Concept { handle: '%s' }) "
             "ON CREATE SET c.id = %i, c.created_at = timestamp(), "
             "c.feed_ids = ['%s'] "
-            "ON MATCH SET c.feed_ids = c.feed_ids + ['%s']") % \
-            (node_handle, u_id, feed_id, feed_id)
+            "ON MATCH SET c.feed_ids = "
+            "CASE WHEN NOT '%s' IN c.feed_ids THEN c.feed_ids + ['%s'] "
+            "ELSE c.feed_ids END") % \
+            (node_handle, u_id, feed_id, feed_id, feed_id)
 
 def _get_media_type_path(node_idx, json_feed):
     mediatype = ''
@@ -96,8 +98,11 @@ def _get_create_media_query(node_handle, u_id, mediatype, mediapath, feed_id):
     return ("MERGE (m:Media:%s { handle: '%s', mediapath: '%s' }) "
             "ON CREATE SET m.id = %i, m.created_at = timestamp(), "
             "m.feed_ids = ['%s'] "
-            "ON MATCH SET m.feed_ids = m.feed_ids + ['%s']") % \
-            (mediatype.title(), node_handle, mediapath, u_id, feed_id, feed_id)
+            "ON MATCH SET m.feed_ids = "
+            "CASE WHEN NOT '%s' IN m.feed_ids THEN m.feed_ids + ['%s'] "
+            "ELSE m.feed_ids END") % \
+            (mediatype.title(), node_handle, mediapath, u_id, feed_id, feed_id,
+            feed_id)
 
 def _add_media_node_to_graph(node_handle, mediatype, mediapath, feed_id, tx):
     if node_handle is None:
@@ -131,8 +136,11 @@ def _add_edge_to_graph(edge_name, from_node_id, to_node_id, edge_props, feed_id,
         "MATCH (from { id: %i }), (to { id: %i }) "
         "MERGE (from)-[r:%s %s ]->(to) "
         "ON CREATE SET r.created_at = timestamp(), r.feed_ids = ['%s'] "
-        "ON MATCH SET r.feed_ids = r.feed_ids + ['%s']") % \
-        (from_node_id, to_node_id, edge_name.upper(), props_str, feed_id, feed_id)
+        "ON MATCH SET r.feed_ids = "
+        "CASE WHEN NOT '%s' IN r.feed_ids THEN r.feed_ids + ['%s'] "
+        "ELSE r.feed_ids END") % \
+        (from_node_id, to_node_id, edge_name.upper(), props_str, feed_id, 
+        feed_id, feed_id)
     )
 
 def append_cypher_queries(json_feed, tx):
@@ -187,3 +195,23 @@ def add_feed_to_graph(json_feed):
     for query in queries:
         tx.append(query)
     tx.commit()
+
+if __name__ == '__main__':
+    queries = []
+    append_cypher_queries({
+        "username" : "arzav",
+        "_id": "asdf",
+        "feedtype" : "",
+        "mediashow" : [ ],
+        "text" : "#Simhat_Torah is a synonym of  #Rejoicing_in_the_Law",
+        "hashtags" : " simhat_torah rejoicing_in_the_law", 
+        "mediatype" : [ ],
+        "source_url" : "http://wordnet.princeton.edu/",
+        "source_text" : "WordNet",
+        "mediamap" : [ ],
+        "media" : [ ],
+        "keywords": ["Simhat_Torah","Rejoicing_in_the_Law","synonym","wordnet"], 
+        "upvotes" : 0, 
+        "graphStructure": ["#same_synset: #0 -> #1", "#same_synset: #1 -> #0"]},
+        queries)
+    print queries
