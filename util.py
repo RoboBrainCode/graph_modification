@@ -5,7 +5,7 @@ import datetime
 from bson.objectid import ObjectId
 from py2neo import neo4j
 
-HOST = 'ec2-54-69-241-26.us-west-2.compute.amazonaws.com'
+HOST = 'ec2-54-148-208-139.us-west-2.compute.amazonaws.com'
 DBNAME = 'backend_test_deploy'
 PORT = 27017
 client = pm.MongoClient(HOST, PORT)
