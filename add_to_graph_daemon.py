@@ -1,13 +1,11 @@
 #!/usr/bin/python
-
 import os
 import sys
 import boto
 import json
 import traceback
-from util import *
 from boto.sqs.message import RawMessage
-from views import append_cypher_queries
+from insertInWeaver import insertInWeaver
 from bson import json_util
 
 conn = boto.sqs.connect_to_region(
@@ -15,7 +13,7 @@ conn = boto.sqs.connect_to_region(
     aws_access_key_id='AKIAIDKZIEN24AUR7CJA', 
     aws_secret_access_key='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')
 
-feed_queue = conn.create_queue('feed_queue')
+feed_queue = conn.create_queue('weaverFeed_queue')
 feed_queue.set_message_class(RawMessage)
 
 NUM_SECONDS_TO_POLL = 20
@@ -34,7 +32,6 @@ def write_pid_to_file():
 def main():
     write_pid_to_file()
     try:
-
         while True:
             queries = []
             feeds_to_update = []
@@ -43,24 +40,11 @@ def main():
             for m in messages:
                 json_feed = json.loads(
                     m.get_body(), object_hook=json_util.object_hook)
-                if feed_has_already_been_added(json_feed):
-                    print 'feed has already been added'
-                    continue
-                temp_queries = []
-                try:
-                    append_cypher_queries(json_feed, temp_queries)
-                except Exception, e:
-                    print traceback.format_exc()
-                    print json_feed
+                if insertInWeaver(json_feed):
+                    feed_queue.delete_message(m)
                 else:
-                    for q in temp_queries:
-                        queries.append(q)
-                    feeds_to_update.append(json_feed)
-
-            if len(queries) > 0:
-                submit_batch(queries, feeds_to_update)
-            if len(messages) > 0:
-                feed_queue.delete_message_batch(messages)
+                    print 'Cannot insert the given message:'
+                    print m
 
     except Exception, e:
         print traceback.format_exc()
