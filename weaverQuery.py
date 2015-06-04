@@ -74,7 +74,7 @@ if __name__ == "__main__":
 	InsertConcept(Label='Concept',handle='wall123',CreatedAt=datetime.datetime.now(),feed_ids = 'random')
 	read_props = c.get_node_properties('wall123')
 	print read_props
-	InsertNewRelation(label='SAME_TYPE',keywords="'Simhat_Torah', 'Rejoicing_in_the_Law', 'synonym', 'wordnet'",source_text='WordNet',source_url='http://wordnet.princeton.edu/',feed_ids=['asdf'],CreatedAt=datetime.datetime.now(),src='floor123',dst='wall123')
-
+	InsertNewRelation(label='SAME_TYPE',keywords="'Simhat_Torah', 'Rejoicing_in_the_Law', 'synonym', 'wordnet'",source_text='WordNet',source_url='http://wordnet.princeton.edu/',feed_ids=['asdf'],CreatedAt=datetime.datetime.now(),src='floor',dst='wall')
+	InsertMedia(Label='Media',handle='unique_handle123',Id='random123',feed_ids = 'abc',mediatype='Image',mediapath='/path',CreatedAt=datetime.datetime.now())
 
 
