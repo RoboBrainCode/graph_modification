@@ -1,8 +1,13 @@
 from weaver import client
 c = client.Client('172.31.33.213', 2002) # Syslab
 import datetime
+colorred = "\033[01;31m{0}\033[00m"
+colorgrn = "\033[1;36m{0}\033[00m"
 #Creating a new Concept in RoboBrain
 def InsertConcept(Label='Concept',handle='floor',Id='1',CreatedAt=datetime.datetime.now(),feed_ids = 'random123'):
+	if not handle:
+		print colorred.format('undefined concept node handle')
+		return
 	c.begin_tx()
 	c.create_node(handle)
 	c.set_node_properties(node=handle,properties={'labels':':Concept','handle':handle,'created_at':CreatedAt,'feed_ids':feed_ids})
@@ -20,6 +25,9 @@ def InsertConcept(Label='Concept',handle='floor',Id='1',CreatedAt=datetime.datet
 
 #Creating a new Media in RoboBrain
 def InsertMedia(Label='Media',handle='unique_handle',Id='random',feed_ids = 'abc',mediatype='Image',mediapath='/path',CreatedAt=datetime.datetime.now()):
+	if not handle:
+		print colorred.format('undefined media node handle')
+		return
 	c.begin_tx()
 	c.create_node(Id)
 	label=':Media:'+mediatype
@@ -38,6 +46,13 @@ def InsertMedia(Label='Media',handle='unique_handle',Id='random',feed_ids = 'abc
 
 #Creating a new Concept Relationship in RoboBrain
 def InsertRelation(label='SAME_TYPE',keywords="'Simhat_Torah', 'Rejoicing_in_the_Law', 'synonym', 'wordnet'",source_text='WordNet',source_url='http://wordnet.princeton.edu/',feed_ids=['asdf'],CreatedAt=datetime.datetime.now(),src='1',dst='2',edgeDirection='F'):
+	if not src:
+		print colorred.format('Source undefined')
+		return
+	if not dst:
+		print colorred.format('Destination undefined')
+		return
+
 	edges=c.get_edges(node=src,properties=[('label',label),('keywords',keywords),('source_text',source_text),('source_url',source_url),('edgeDirection',edgeDirection)],nbrs=[dst])  # all the edges at a particular node
 	if len(edges)==1:
 		handle=edges[0].handle
