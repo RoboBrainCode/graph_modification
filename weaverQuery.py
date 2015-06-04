@@ -1,5 +1,5 @@
 from weaver import client
-c = client.Client('128.84.167.248', 2002) # Syslab
+c = client.Client('172.31.33.213', 2002) # Syslab
 # c = client.Client('128.84.217.97', 2002) # Arpit's Lab
 # c = client.Client('127.0.0.1', 2002) 
 import datetime
