@@ -1,13 +1,11 @@
 from weaver import client
 c = client.Client('172.31.33.213', 2002) # Syslab
-# c = client.Client('128.84.217.97', 2002) # Arpit's Lab
-# c = client.Client('127.0.0.1', 2002) 
 import datetime
 #Creating a new Concept in RoboBrain
 def InsertConcept(Label='Concept',handle='floor',Id='1',CreatedAt=datetime.datetime.now(),feed_ids = 'random123'):
 	c.begin_tx()
 	c.create_node(handle)
-	c.set_node_properties(node=handle,properties={'label':'Concept','handle':handle,'created_at':CreatedAt,'feed_ids':feed_ids})
+	c.set_node_properties(node=handle,properties={'labels':':Concept','handle':handle,'created_at':CreatedAt,'feed_ids':feed_ids})
 	try:
 	    c.end_tx()
 	    print 'created a new concept node'
@@ -24,8 +22,8 @@ def InsertConcept(Label='Concept',handle='floor',Id='1',CreatedAt=datetime.datet
 def InsertMedia(Label='Media',handle='unique_handle',Id='random',feed_ids = 'abc',mediatype='Image',mediapath='/path',CreatedAt=datetime.datetime.now()):
 	c.begin_tx()
 	c.create_node(Id)
-	label='Media:'+mediatype
-	c.set_node_properties(node=Id,properties={'label':label,'handle':handle,'created_at':CreatedAt,'feed_ids':feed_ids,'mediapath':mediapath})
+	label=':Media:'+mediatype
+	c.set_node_properties(node=Id,properties={'labels':label,'handle':handle,'created_at':CreatedAt,'feed_ids':feed_ids,'mediapath':mediapath})
 	try:
 	    c.end_tx()
 	    print 'created a new media node'
@@ -65,12 +63,13 @@ def InsertRelation(label='SAME_TYPE',keywords="'Simhat_Torah', 'Rejoicing_in_the
 
 
 def InsertNewRelation(label='SAME_TYPE',keywords="'Simhat_Torah', 'Rejoicing_in_the_Law', 'synonym', 'wordnet'",source_text='WordNet',source_url='http://wordnet.princeton.edu/',feed_ids=['asdf'],CreatedAt=datetime.datetime.now(),src='1',dst='2'):
-	InsertRelation(label=label,keywords=keywords,source_text=source_text,source_url=source_url,feed_ids=feed_ids,CreatedAt=CreatedAt,src=src,dst=dst,edgeDirection='F')
-	InsertRelation(label=label,keywords=keywords,source_text=source_text,source_url=source_url,feed_ids=feed_ids,CreatedAt=CreatedAt,src=dst,dst=src,edgeDirection='B')
+	return
+#	InsertRelation(label=label,keywords=keywords,source_text=source_text,source_url=source_url,feed_ids=feed_ids,CreatedAt=CreatedAt,src=src,dst=dst,edgeDirection='F')
+#	InsertRelation(label=label,keywords=keywords,source_text=source_text,source_url=source_url,feed_ids=feed_ids,CreatedAt=CreatedAt,src=dst,dst=src,edgeDirection='B')
 
 if __name__ == "__main__":
-	InsertConcept(Label='Concept',handle='floor',Id='1',CreatedAt=datetime.datetime.now(),feed_ids = 'random123')
-	read_props = c.get_node_properties('1')
+	InsertConcept(Label='Concept',handle='floor123',Id='1',CreatedAt=datetime.datetime.now(),feed_ids = 'random123')
+	read_props = c.get_node_properties('floor123')
 	print read_props
 	InsertConcept(Label='Concept',handle='wall',Id='2',CreatedAt=datetime.datetime.now(),feed_ids = 'random')
 	read_props = c.get_node_properties('2')

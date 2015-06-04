@@ -12,6 +12,10 @@ import spellcheck
 import datetime
 from bson.objectid import ObjectId
 
+
+from threading import Lock
+insertLock=Lock()
+
 CONFIG = ConfigParser.ConfigParser()
 CONFIG.read(os.path.dirname(os.path.abspath(__file__)) + '/config.ini')
 NormalizationSection = 'HandleNameNormalizations'
@@ -156,5 +160,6 @@ def insertInWeaver(response):
         else:
             retVal=vals
         json_feed[key]=retVal
-    add_weaver_queries(json_feed)
+    with insertLock:
+    	add_weaver_queries(json_feed)
     return True
