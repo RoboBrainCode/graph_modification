@@ -7,6 +7,7 @@ colorred = "\033[01;31m{0}\033[00m"
 colorgrn = "\033[1;36m{0}\033[00m"
 #Creating a new Concept in RoboBrain
 def InsertConcept(Label='Concept',handle='floor',Id='1',CreatedAt=datetime.datetime.now(),feed_ids = 'random123'):
+	print Label,handle,feed_ids
 	if not handle:
 		print colorred.format('undefined concept node handle')
 		return
@@ -27,6 +28,7 @@ def InsertConcept(Label='Concept',handle='floor',Id='1',CreatedAt=datetime.datet
 
 #Creating a new Media in RoboBrain
 def InsertMedia(Label='Media',handle='unique_handle',Id='random',feed_ids = 'abc',mediatype='Image',mediapath='/path',CreatedAt=datetime.datetime.now()):
+	print Label,handle,feed_ids
 	if not handle:
 		print colorred.format('undefined media node handle')
 		return
@@ -48,6 +50,7 @@ def InsertMedia(Label='Media',handle='unique_handle',Id='random',feed_ids = 'abc
 
 #Creating a new Concept Relationship in RoboBrain
 def InsertRelation(label='SAME_TYPE',keywords="'Simhat_Torah', 'Rejoicing_in_the_Law', 'synonym', 'wordnet'",source_text='WordNet',source_url='http://wordnet.princeton.edu/',feed_ids=['asdf'],CreatedAt=datetime.datetime.now(),src='1',dst='2',edgeDirection='F'):
+	print Label,'Relationship'
 	if not src:
 		print colorred.format('Source undefined')
 		return
