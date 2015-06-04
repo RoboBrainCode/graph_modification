@@ -68,13 +68,13 @@ def InsertNewRelation(label='SAME_TYPE',keywords="'Simhat_Torah', 'Rejoicing_in_
 #	InsertRelation(label=label,keywords=keywords,source_text=source_text,source_url=source_url,feed_ids=feed_ids,CreatedAt=CreatedAt,src=dst,dst=src,edgeDirection='B')
 
 if __name__ == "__main__":
-	InsertConcept(Label='Concept',handle='floor123',Id='1',CreatedAt=datetime.datetime.now(),feed_ids = 'random123')
+	InsertConcept(Label='Concept',handle='floor123',CreatedAt=datetime.datetime.now(),feed_ids = 'random123')
 	read_props = c.get_node_properties('floor123')
 	print read_props
-	InsertConcept(Label='Concept',handle='wall',Id='2',CreatedAt=datetime.datetime.now(),feed_ids = 'random')
-	read_props = c.get_node_properties('2')
+	InsertConcept(Label='Concept',handle='wall123',CreatedAt=datetime.datetime.now(),feed_ids = 'random')
+	read_props = c.get_node_properties('wall123')
 	print read_props
-	InsertNewRelation(label='SAME_TYPE',keywords="'Simhat_Torah', 'Rejoicing_in_the_Law', 'synonym', 'wordnet'",source_text='WordNet',source_url='http://wordnet.princeton.edu/',feed_ids=['asdf'],CreatedAt=datetime.datetime.now(),src='1',dst='2')
+	InsertNewRelation(label='SAME_TYPE',keywords="'Simhat_Torah', 'Rejoicing_in_the_Law', 'synonym', 'wordnet'",source_text='WordNet',source_url='http://wordnet.princeton.edu/',feed_ids=['asdf'],CreatedAt=datetime.datetime.now(),src='floor123',dst='wall123')
 
 
 
