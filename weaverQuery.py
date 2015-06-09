@@ -20,18 +20,17 @@ def getUpdatedProperty(newProps,oldProps):
 	print 'update property'
 	print oldProps
 	print newProps
-	for key,val in nodeProps.iteritems():
+	for key,val in newProps.iteritems():
 			updateVal=val
 			if key in oldProps:
-				updateVal=mergeProps(nodeProps[key],oldProps[key])
-			nodeProps[key]=updateVal
+				updateVal=mergeProps(newProps[key],oldProps[key])
+			newProps[key]=updateVal
 
-	print nodeProps
-	print 'update property'
-	return nodeProps
+	print newProps
+	print 'end of update property'
+	return newProps
 
-
-def InsertConcept(Id='floor',CreatedAt=datetime.datetime.now(),nodeProps={}):
+def InsertNode(Id='floor',CreatedAt=datetime.datetime.now(),nodeProps={}):
 	nodeProps['created_at']=CreatedAt
 	if not Id:
 		print colorred.format('undefined concept node handle')
@@ -41,50 +40,20 @@ def InsertConcept(Id='floor',CreatedAt=datetime.datetime.now(),nodeProps={}):
 	c.set_node_properties(node=Id,properties=nodeProps)
 	try:
 	    c.end_tx()
-	    print 'created a new concept node'
+	    print 'created a new node'
 	    node=c.get_node(node=Id)
 	except client.WeaverError:
 		print 'node already exists'
+		nodeProps.pop("created_at", None)
 		node=c.get_node(node=Id)
 		print node.properties
 		oldProps=c.get_node(node=Id).properties
 		c.begin_tx()
-		c.set_node_properties(node=handle,properties=getUpdatedProperty(nodeProps,oldProps))
+		c.set_node_properties(node=Id,properties=getUpdatedProperty(nodeProps,oldProps))
 		try:
 			c.end_tx()
 		except client.WeaverError:
 			print 'Internal Error, contact the system administrator'
-
-		# c.set_node_properties(node=handle,properties={'feed_ids':feed_ids})
-		
-		# 	print 'Concept Node already exist:Feed Id inserted'
-		# except client.WeaverError:
-		# 	print 'Concept Node already exist:Such feed id is already inserted'
-
-#Creating a new Media in RoboBrain
-def InsertMedia(Id='random',CreatedAt=datetime.datetime.now(),nodeProps={}):
-	nodeProps['created_at']=CreatedAt
-	if not Id:
-		print colorred.format('undefined media node handle')
-		return
-	c.begin_tx()
-	c.create_node(Id)
-	c.set_node_properties(node=Id,properties=nodeProps)
-	try:
-	    c.end_tx()
-	    print 'created a new media node'
-            node=c.get_node(node=Id)
-	    print node.properties
-	except client.WeaverError:
-		#c.begin_tx()
-		node=c.get_node(node=Id)
-		print node.properties
-		# c.set_node_properties(node=Id,properties={'feed_ids':feed_ids})
-		# try:
-		# 	c.end_tx()
-		# 	print 'Media Node already exist:Feed Id inserted'
-		# except client.WeaverError:
-		# 	print 'Media Node already exist:Such feed id is already inserted'
 
 #Creating a new Concept Relationship in RoboBrain
 def InsertRelation(CreatedAt=datetime.datetime.now(),src='1',dst='2',edgeDirection='F',edgeProps={}):
@@ -100,15 +69,15 @@ def InsertRelation(CreatedAt=datetime.datetime.now(),src='1',dst='2',edgeDirecti
 	edges=c.get_edges(node=src,properties={'label':edgeProps['label'],'source_text':edgeProps['source_text'],'source_url':edgeProps['source_url'],'edgeDirection':edgeProps['edgeDirection']},nbrs=[dst])  # all the edges at a particular node
 	if len(edges)==1:
 		handle=edges[0].handle
-		print edges[0].properties
-		# c.begin_tx()
-		# c.set_edge_properties(node=src,edge=handle,properties={'feed_ids':feed_ids})
-		# try:
-		# 	c.end_tx()
-		# 	edges=c.get_edges(node=src,properties=[('label',label),('keywords',keywords),('source_text',source_text),('source_url',source_url),('edgeDirection',edgeDirection)],nbrs=[dst])  # all the edges at a particular node
-		# 	print edges[0].properties
-		# except client.WeaverError:
-		# 	print 'Edge Exists: Such FeedId Already exists'
+		edgeProps.pop("created_at", None)
+		oldProps=edges[0].properties
+		c.begin_tx()
+		c.set_node_properties(node=Id,properties=getUpdatedProperty(edgeProps,oldProps))
+		try:
+			c.end_tx()
+		except client.WeaverError:
+			print 'Internal Error, contact the system administrator'
+
 
 	elif len(edges)==0:
 		c.begin_tx()
@@ -131,14 +100,14 @@ def InsertNewRelation(CreatedAt=datetime.datetime.now(),src='1',dst='2',edgeProp
 	InsertRelation(CreatedAt=CreatedAt,src=src,dst=dst,edgeDirection='B',edgeProps=edgeProps)
 
 if __name__ == "__main__":
-	InsertConcept(Id='floor',CreatedAt=datetime.datetime.now(),nodeProps={'pk': 'prop1', 'feed_id': '5576848d76b9a67abccd8073', 'handle': 'floor', 'prop2': '123', 'label': 'Concept'})
+	InsertNode(Id='floor',CreatedAt=datetime.datetime.now(),nodeProps={'pk': 'prop1,prop2', 'feed_id': '5576848d76b9a67abccd8073,modified', 'handle': 'floor123', 'prop2': '123', 'label': 'Concept,Image'})
 	read_props = c.get_node_properties('floor')
 	print read_props
-	InsertConcept(Id='wall',CreatedAt=datetime.datetime.now(),nodeProps={'pk': 'prop1', 'feed_id': '5576848d76b9a67abccd8073', 'handle': 'wall', 'prop2': '123', 'label': 'Concept'})
+	InsertNode(Id='wall',CreatedAt=datetime.datetime.now(),nodeProps={'pk': 'prop1', 'feed_id': '5576848d76b9a67abccd8073', 'handle': 'wall', 'prop2': '123', 'label': 'Concept'})
 	read_props = c.get_node_properties('wall')
 	print read_props
 	InsertNewRelation(CreatedAt=datetime.datetime.now(),src='floor',dst='wall',edgeProps={'keywords': 'Human,Affordance,Object,shoe,Standing', 'pk': 'prop1', 'source_text': 'Hallucinating Humans', 'prop2': '123', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/','label':'hello'})
 	
-	InsertMedia(Id='random123',CreatedAt=datetime.datetime.now(),nodeProps={'handle': 'heatmap_12', 'mediapath': '/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg', 'label': 'Media,Image', 'feed_id': '5576848d76b9a67abccd8073', 'prop2': '123', 'pk': 'prop1'})
+	InsertNode(Id='random123',CreatedAt=datetime.datetime.now(),nodeProps={'handle': 'heatmap_12', 'mediapath': '/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg', 'label': 'Media,Image', 'feed_id': '5576848d76b9a67abccd8073', 'prop2': '123', 'pk': 'prop1'})
 	
 
