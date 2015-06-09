@@ -27,7 +27,7 @@ def getUpdatedProperty(newProps,oldProps):
 			nodeProps[key]=updateVal
 
 	print nodeProps
-	print 'end of update property'
+	print 'update property'
 	return nodeProps
 
 
