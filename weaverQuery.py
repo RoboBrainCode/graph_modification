@@ -19,6 +19,7 @@ def InsertConcept(Id='floor',CreatedAt=datetime.datetime.now(),nodeProps={}):
 	    c.end_tx()
 	    print 'created a new concept node'
 	except client.WeaverError:
+		
 		node=c.get_node(node=Id)
 		print node.properties
 		# c.begin_tx()
