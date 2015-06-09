@@ -40,14 +40,12 @@ def main():
             for m in messages:
                 json_feed = json.loads(
                     m.get_body(), object_hook=json_util.object_hook)
-                print insertInWeaver(json_feed)
-                # feed_queue.delete_message(m)
-                assert False
-                # # if insertInWeaver(json_feed):
-                # #     feed_queue.delete_message(m)
-                # else:
-                #     print 'Cannot insert the given message:'
-                #     print m
+                
+                if insertInWeaver(json_feed):
+                    feed_queue.delete_message(m)
+                else:
+                    print 'Cannot insert the given message:'
+                    print m
 
     except Exception, e:
         print traceback.format_exc()
