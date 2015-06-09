@@ -40,17 +40,23 @@ def main():
             for m in messages:
                 json_feed = json.loads(
                     m.get_body(), object_hook=json_util.object_hook)
-                if insertInWeaver(json_feed):
-                    feed_queue.delete_message(m)
-                else:
-                    print 'Cannot insert the given message:'
-                    print m
+                print insertInWeaver(json_feed)
+                # feed_queue.delete_message(m)
+                assert False
+                # # if insertInWeaver(json_feed):
+                # #     feed_queue.delete_message(m)
+                # else:
+                #     print 'Cannot insert the given message:'
+                #     print m
 
     except Exception, e:
         print traceback.format_exc()
 
     finally:
         os.unlink(PIDFILE)
+def test(json_feed):
+    # print json_feed
+    insertInWeaver(json_feed)
 
 if __name__ == '__main__':
     main()
