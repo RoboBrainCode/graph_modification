@@ -1,0 +1,30 @@
+created a new node
+standing_human {'handle': 'standing_human', 'created_at': datetime.datetime(2015, 6, 9, 21, 1, 12, 268307), 'label': 'Concept', 'feed_id': '55774e8876b9a67be7082f06', 'prop2': '123', 'pk': 'prop1'}
+created a new node
+shoe {'handle': 'shoe', 'created_at': datetime.datetime(2015, 6, 9, 21, 1, 12, 268307), 'label': 'Concept', 'feed_id': '55774e8876b9a67be7082f06', 'prop2': '123', 'pk': 'prop1'}
+created a new node
+heatmap_12__/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg {'handle': 'heatmap_12', 'mediapath': '/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg', 'created_at': datetime.datetime(2015, 6, 9, 21, 1, 12, 268307), 'label': 'Media,Image', 'feed_id': '55774e8876b9a67be7082f06', 'prop2': '123', 'pk': 'prop1'}
+created  new edge
+shoe heatmap_12__/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg {'edgeDirection': 'F', 'created_at': datetime.datetime(2015, 6, 9, 21, 1, 12, 268320), 'label': 'SPATIALLY_DISTRIBUTED_AS', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'prop2': '123', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'pk': 'prop1', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+created  new edge
+shoe heatmap_12__/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg {'edgeDirection': 'B', 'created_at': datetime.datetime(2015, 6, 9, 21, 1, 12, 268320), 'label': 'SPATIALLY_DISTRIBUTED_AS', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'prop2': '123', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'pk': 'prop1', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+created  new edge
+standing_human heatmap_12__/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg {'edgeDirection': 'F', 'created_at': datetime.datetime(2015, 6, 9, 21, 1, 12, 268320), 'label': 'SPATIALLY_DISTRIBUTED_AS', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+created  new edge
+standing_human heatmap_12__/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg {'edgeDirection': 'B', 'created_at': datetime.datetime(2015, 6, 9, 21, 1, 12, 268320), 'label': 'SPATIALLY_DISTRIBUTED_AS', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+created  new edge
+standing_human shoe {'edgeDirection': 'F', 'created_at': datetime.datetime(2015, 6, 9, 21, 1, 12, 268320), 'label': 'CAN_USE', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'prop2': '123', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'pk': 'prop1', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+created  new edge
+standing_human shoe {'edgeDirection': 'B', 'created_at': datetime.datetime(2015, 6, 9, 21, 1, 12, 268320), 'label': 'CAN_USE', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'prop2': '123', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'pk': 'prop1', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+created a new node
+shoe_.jpg__/home/ozan/ilcrf/images/shoe_.jpg {'mediapath': '/home/ozan/ilcrf/images/shoe_.jpg', 'created_at': datetime.datetime(2015, 6, 9, 21, 1, 12, 268307), 'feed_id': '55774e8876b9a67be7082f06', 'handle': 'shoe_.jpg', 'label': 'Media,Image'}
+created  new edge
+shoe shoe_.jpg__/home/ozan/ilcrf/images/shoe_.jpg {'edgeDirection': 'F', 'created_at': datetime.datetime(2015, 6, 9, 21, 1, 12, 268320), 'label': 'HAS_MEDIA', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+created  new edge
+shoe shoe_.jpg__/home/ozan/ilcrf/images/shoe_.jpg {'edgeDirection': 'B', 'created_at': datetime.datetime(2015, 6, 9, 21, 1, 12, 268320), 'label': 'HAS_MEDIA', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+True
+Traceback (most recent call last):
+  File "add_to_graph_daemon.py", line 45, in main
+    assert False
+AssertionError
+
