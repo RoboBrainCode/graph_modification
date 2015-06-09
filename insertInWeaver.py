@@ -94,9 +94,9 @@ def _add_media_node_to_graph(node_handle, mediatype, mediapath, feed_id,nodeProp
         node_handle = _filename_from_path(mediapath)
     u_id = node_handle+'__'+mediapath
 
-    nodeProps['label']='Media,'+mediatype.title()
+    nodeProps['labels']='Media,'+mediatype.title()
     nodeProps['handle']=node_handle
-    nodeProps['feed_id']=feed_id
+    nodeProps['feed_ids']=feed_id
     nodeProps['mediapath']=mediapath
     global globalResult
     globalResult=globalResult and InsertNode(Id=u_id,nodeProps=nodeProps)
@@ -110,8 +110,8 @@ def _add_node_to_graph(node_handle, node_idx, json_feed,nodeProps):
     if (node_handle[0] != '$'):
         u_id = _get_unique_id(node_handle)
         nodeProps['handle']=str(node_handle)
-        nodeProps['feed_id']=str(feed_id)
-        nodeProps['label']='Concept'
+        nodeProps['feed_ids']=str(feed_id)
+        nodeProps['labels']='Concept'
         global globalResult
         globalResult=globalResult and  InsertNode(Id=str(node_handle),nodeProps=nodeProps)
     else:
@@ -124,7 +124,7 @@ def _add_node_to_graph(node_handle, node_idx, json_feed,nodeProps):
 def _add_edge_to_graph(edge_name, from_node_id, to_node_id, edge_props, feed_id):
     props_str = re.sub("'(\\w+)':", r'\1:', str(edge_props))
     edge_props['label']=edge_name.upper()
-    edge_props['feed_id']=str(feed_id)
+    edge_props['feed_ids']=str(feed_id)
     global globalResult
     globalResult= globalResult and InsertNewRelation(src=str(from_node_id),dst=str(to_node_id),edgeProps=edgeProps)
 
