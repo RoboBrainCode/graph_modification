@@ -16,6 +16,8 @@ from bson.objectid import ObjectId
 from threading import Lock
 insertLock=Lock()
 
+globalResult=True
+
 CONFIG = ConfigParser.ConfigParser()
 CONFIG.read(os.path.dirname(os.path.abspath(__file__)) + '/config.ini')
 NormalizationSection = 'HandleNameNormalizations'
@@ -94,16 +96,11 @@ def _add_media_node_to_graph(node_handle, mediatype, mediapath, feed_id,nodeProp
 
     nodeProps['label']='Media,'+mediatype.title()
     nodeProps['handle']=node_handle
-    nodeProps['feed_ids']=feed_id
+    nodeProps['feed_id']=feed_id
     nodeProps['mediapath']=mediapath
-    print 'Media Node Added'
-    print 
-    print 
-    print u_id,nodeProps
-    print 
-    print 
-    # print 'Media','NodeHandle:',node_handle,'UID:',u_id,'FeedID:',feed_id,'MediaType:',mediatype.title(),'MediaPath:',mediapath
-    # InsertMedia(Label='Media',handle=str(node_handle),Id=str(u_id),feed_ids = str(feed_id),mediatype=str(mediatype.title()),mediapath=str(mediapath))
+    global globalResult
+    globalResult=globalResult and InsertNode(Id=u_id,nodeProps=nodeProps)
+    
     return u_id
 
 
@@ -112,17 +109,11 @@ def _add_node_to_graph(node_handle, node_idx, json_feed,nodeProps):
     feed_id = json_feed['_id']
     if (node_handle[0] != '$'):
         u_id = _get_unique_id(node_handle)
-        nodeProps['handle']=node_handle
-        nodeProps['feed_id']=feed_id
+        nodeProps['handle']=str(node_handle)
+        nodeProps['feed_id']=str(feed_id)
         nodeProps['label']='Concept'
-        print 'Concept Node Added'
-        print 
-        print
-        print nodeProps
-        print 
-        print
-        # print 'Concept','node_handle:',node_handle,'u_id:',u_id,'feed_id:',feed_id
-        # InsertConcept(Label='Concept',handle=str(node_handle),Id=str(u_id),feed_ids = str(feed_id))
+        global globalResult
+        globalResult=globalResult and  InsertNode(Id=str(node_handle),nodeProps=nodeProps)
     else:
         node_handle = node_handle[1:] # strip dollar sign
         mediatype, mediapath = _get_media_type_path(node_idx, json_feed)
@@ -133,14 +124,9 @@ def _add_node_to_graph(node_handle, node_idx, json_feed,nodeProps):
 def _add_edge_to_graph(edge_name, from_node_id, to_node_id, edge_props, feed_id):
     props_str = re.sub("'(\\w+)':", r'\1:', str(edge_props))
     edge_props['label']=edge_name.upper()
-    edge_props['feed_ids']=str(feed_id)
-    print 'Edge Added'
-    print 
-    print 
-    print 'relation',edge_props,'src=',str(from_node_id),'dst=',str(to_node_id)
-    print 
-    print
-    # InsertNewRelation(label=str(edge_name.upper()),keywords=str(edge_props['keywords']),source_text=str(edge_props['source_text']),source_url=str(edge_props['source_url']),feed_ids=str(feed_id),src=str(from_node_id),dst=str(to_node_id))
+    edge_props['feed_id']=str(feed_id)
+    global globalResult
+    globalResult= globalResult and InsertNewRelation(src=str(from_node_id),dst=str(to_node_id),edgeProps=edgeProps)
 
 def add_weaver_queries(json_feed):
     handles = [_normalize_handle_name(m.group(1)) for m in re.finditer('#([^ .]+)', json_feed['text'])]
@@ -154,7 +140,6 @@ def add_weaver_queries(json_feed):
     edge_props = _get_edge_props(json_feed)
     feed_id = json_feed['_id']
     countVal=0
-    print edges_with_indices
     for edge in edges_with_indices:
         from_node_id = handle_graph_ids[edge[1]]
         to_node_id = handle_graph_ids[edge[2]]
@@ -162,7 +147,6 @@ def add_weaver_queries(json_feed):
         
         if json_feed['edgeProps'] and str(countVal) in json_feed['edgeProps']:
             updatedEdgeProps=dict(json_feed['edgeProps'][str(countVal)])
-            print 'Hello'
         updatedEdgeProps.update(edge_props)
         
         _add_edge_to_graph(
@@ -216,6 +200,8 @@ def insertInWeaver(response):
         else:
             retVal=vals
         json_feed[key]=retVal
+    global globalResult
+    globalResult=True
     with insertLock:
     	add_weaver_queries(json_feed)
-    return True
+    return globalResult

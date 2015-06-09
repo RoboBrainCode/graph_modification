@@ -17,17 +17,12 @@ def mergeProps(l1,l2):
 	return ",".join(l3)
 
 def getUpdatedProperty(newProps,oldProps):
-	print 'update property'
-	print oldProps
-	print newProps
 	for key,val in newProps.iteritems():
 			updateVal=val
 			if key in oldProps:
 				updateVal=mergeProps(newProps[key],oldProps[key])
 			newProps[key]=updateVal
 
-	print newProps
-	print 'end of update property'
 	return newProps
 
 def InsertNode(Id='floor',CreatedAt=datetime.datetime.now(),nodeProps={}):
@@ -41,19 +36,21 @@ def InsertNode(Id='floor',CreatedAt=datetime.datetime.now(),nodeProps={}):
 	try:
 	    c.end_tx()
 	    print 'created a new node'
-	    node=c.get_node(node=Id)
+	    print Id,nodeProps
+	    return True
 	except client.WeaverError:
 		print 'node already exists'
+		print Id,nodeProps
 		nodeProps.pop("created_at", None)
-		node=c.get_node(node=Id)
-		print node.properties
 		oldProps=c.get_node(node=Id).properties
 		c.begin_tx()
 		c.set_node_properties(node=Id,properties=getUpdatedProperty(nodeProps,oldProps))
 		try:
 			c.end_tx()
+			return True
 		except client.WeaverError:
 			print 'Internal Error, contact the system administrator'
+			return False
 
 #Creating a new Concept Relationship in RoboBrain
 def InsertRelation(CreatedAt=datetime.datetime.now(),src='1',dst='2',edgeDirection='F',edgeProps={}):
@@ -75,8 +72,12 @@ def InsertRelation(CreatedAt=datetime.datetime.now(),src='1',dst='2',edgeDirecti
 		c.set_node_properties(node=Id,properties=getUpdatedProperty(edgeProps,oldProps))
 		try:
 			c.end_tx()
+			print 'edge exists:'
+			print src,dst,edgeProps
+			return True
 		except client.WeaverError:
 			print 'Internal Error, contact the system administrator'
+			return False
 
 
 	elif len(edges)==0:
@@ -86,18 +87,18 @@ def InsertRelation(CreatedAt=datetime.datetime.now(),src='1',dst='2',edgeDirecti
 		try:
 			c.end_tx()
 			print 'created  new edge'
-			edges=c.get_edges(node=src,properties={'label':edgeProps['label'],'source_text':edgeProps['source_text'],'source_url':edgeProps['source_url'],'edgeDirection':edgeProps['edgeDirection']},nbrs=[dst])  # all the edges at a particular node
-			print edges[0].properties
+			print src,dst,edgeProps
+			return True
 		except:
 			print 'there is some internal error, contact the system administrator'
-
+			return False
 	else:
-		assert False,'There cannot be two edges which have the exact same properties'
+		print 'There cannot be two edges which have the exact same properties'
+		return False
 
 
 def InsertNewRelation(CreatedAt=datetime.datetime.now(),src='1',dst='2',edgeProps={}):
-	InsertRelation(CreatedAt=CreatedAt,src=src,dst=dst,edgeDirection='F',edgeProps=edgeProps)
-	InsertRelation(CreatedAt=CreatedAt,src=src,dst=dst,edgeDirection='B',edgeProps=edgeProps)
+	return InsertRelation(CreatedAt=CreatedAt,src=src,dst=dst,edgeDirection='F',edgeProps=edgeProps) and InsertRelation(CreatedAt=CreatedAt,src=src,dst=dst,edgeDirection='B',edgeProps=edgeProps)
 
 if __name__ == "__main__":
 	InsertNode(Id='floor',CreatedAt=datetime.datetime.now(),nodeProps={'pk': 'prop1,prop2', 'feed_id': '5576848d76b9a67abccd8073,modified', 'handle': 'floor123', 'prop2': '123', 'label': 'Concept,Image'})
@@ -107,7 +108,6 @@ if __name__ == "__main__":
 	read_props = c.get_node_properties('wall')
 	print read_props
 	InsertNewRelation(CreatedAt=datetime.datetime.now(),src='floor',dst='wall',edgeProps={'keywords': 'Human,Affordance,Object,shoe,Standing', 'pk': 'prop1', 'source_text': 'Hallucinating Humans', 'prop2': '123', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/','label':'hello'})
-	
 	InsertNode(Id='random123',CreatedAt=datetime.datetime.now(),nodeProps={'handle': 'heatmap_12', 'mediapath': '/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg', 'label': 'Media,Image', 'feed_id': '5576848d76b9a67abccd8073', 'prop2': '123', 'pk': 'prop1'})
 	
 
