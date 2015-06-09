@@ -60,18 +60,3 @@ def test(json_feed):
 
 if __name__ == '__main__':
     main()
-    # test({
-    #     "username" : "arzav",
-    #     "_id": "546e6a2f5caae434656bbc36",
-    #     "feedtype" : "",
-    #     "mediashow" : [ ],
-    #     "text" : "#Simhat_Torah is a synonym of  #Rejoicing_in_the_Law",
-    #     "hashtags" : " simhat_torah rejoicing_in_the_law", 
-    #     "mediatype" : [ ],
-    #     "source_url" : "http://wordnet.princeton.edu/",
-    #     "source_text" : "WordNet",
-    #     "mediamap" : [ ],
-    #     "media" : [ ],
-    #     "keywords": ["Simhat_Torah","Rejoicing_in_the_Law","synonym","wordnet"], 
-    #     "upvotes" : 0, 
-    #     "graphStructure": ["#same_synset: #0 -> #1", "#same_synset: #1 -> #0"]})
