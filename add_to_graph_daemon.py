@@ -3,6 +3,7 @@ import os
 import sys
 import boto
 import json
+import yaml
 import traceback
 from boto.sqs.message import RawMessage
 from insertInWeaver import insertInWeaver
@@ -38,14 +39,16 @@ def main():
             messages = feed_queue.get_messages(num_messages=MSG_BATCH_SIZE, 
                 wait_time_seconds=NUM_SECONDS_TO_POLL)
             for m in messages:
-                json_feed = json.loads(
-                    m.get_body(), object_hook=json_util.object_hook)
-                
+		json_feed=yaml.safe_load(m.get_body())
+                #json_feed = json.loads(
+                   # m.get_body(), object_hook=json_util.object_hook)
+                #print json_feed
+		#assert False
                 if insertInWeaver(json_feed):
                     feed_queue.delete_message(m)
                 else:
                     print 'Cannot insert the given message:'
-                    print m
+                    print json_feed 
 
     except Exception, e:
         print traceback.format_exc()

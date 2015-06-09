@@ -176,30 +176,30 @@ def insertInWeaver(response):
     import unicodedata
     for key,vals in response.iteritems():
         key=unicodedata.normalize('NFKD', key).encode('ascii','ignore')
-        retVal=""
-        if type(vals)==list:
-            for val in vals:
-                val=unicodedata.normalize('NFKD', val).encode('ascii','ignore')
-                retVal=retVal+','+val
-            retVal=retVal[1:]
-        elif type(vals)==dict:
-            resultF=dict()
-            for key1,val in vals.iteritems():
-                res=dict()
-                key1=unicodedata.normalize('NFKD', key1).encode('ascii','ignore')
-                for v1,v2 in val.iteritems():
-                    v1=unicodedata.normalize('NFKD', v1).encode('ascii','ignore')
-                    v2=unicodedata.normalize('NFKD', v2).encode('ascii','ignore')
-                    res[v1]=v2
-                resultF[key1]=res
-            retVal=resultF
+       retVal=""
+     #   if type(vals)==list:
+     #       for val in vals:
+     #           val=unicodedata.normalize('NFKD', val).encode('ascii','ignore')
+     #           retVal=retVal+','+val
+     #       retVal=retVal[1:]
+     #   elif type(vals)==dict:
+      #      resultF=dict()
+      #      for key1,val in vals.iteritems():
+      #          res=dict()
+      #          key1=unicodedata.normalize('NFKD', key1).encode('ascii','ignore')
+       #         for v1,v2 in val.iteritems():
+        #            v1=unicodedata.normalize('NFKD', v1).encode('ascii','ignore')
+        #            v2=unicodedata.normalize('NFKD', v2).encode('ascii','ignore')
+        #            res[v1]=v2
+        #        resultF[key1]=res
+        #    retVal=resultF
 
-        elif type(vals)==unicode:
-            val=unicodedata.normalize('NFKD', vals).encode('ascii','ignore')
-            retVal=val
-        else:
-            retVal=vals
-        json_feed[key]=retVal
+        #elif type(vals)==unicode:
+        #    val=unicodedata.normalize('NFKD', vals).encode('ascii','ignore')
+        #    retVal=val
+        #else:
+        #    retVal=vals
+        #json_feed[key]=retVal
     global globalResult
     globalResult=True
     with insertLock:
