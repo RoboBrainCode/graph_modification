@@ -1,0 +1,38 @@
+node already exists
+standing_human {'handle': 'standing_human', 'created_at': datetime.datetime(2015, 6, 9, 21, 2, 17, 95646), 'label': 'Concept', 'feed_id': '55774e8876b9a67be7082f06', 'prop2': '123', 'pk': 'prop1'}
+node already exists
+shoe {'handle': 'shoe', 'created_at': datetime.datetime(2015, 6, 9, 21, 2, 17, 95646), 'label': 'Concept', 'feed_id': '55774e8876b9a67be7082f06', 'prop2': '123', 'pk': 'prop1'}
+node already exists
+heatmap_12__/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg {'handle': 'heatmap_12', 'mediapath': '/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg', 'created_at': datetime.datetime(2015, 6, 9, 21, 2, 17, 95646), 'label': 'Media,Image', 'feed_id': '55774e8876b9a67be7082f06', 'prop2': '123', 'pk': 'prop1'}
+065590 {'edgeDirection': 'F', 'label': 'SPATIALLY_DISTRIBUTED_AS', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'prop2': '123', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'pk': 'prop1', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+edge exists:
+shoe heatmap_12__/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg {'edgeDirection': 'F', 'label': 'SPATIALLY_DISTRIBUTED_AS', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'prop2': '123', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'pk': 'prop1', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+165590 {'edgeDirection': 'B', 'label': 'SPATIALLY_DISTRIBUTED_AS', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'prop2': '123', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'pk': 'prop1', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+edge exists:
+shoe heatmap_12__/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg {'edgeDirection': 'B', 'label': 'SPATIALLY_DISTRIBUTED_AS', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'prop2': '123', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'pk': 'prop1', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+265590 {'edgeDirection': 'F', 'label': 'SPATIALLY_DISTRIBUTED_AS', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+edge exists:
+standing_human heatmap_12__/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg {'edgeDirection': 'F', 'label': 'SPATIALLY_DISTRIBUTED_AS', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+365590 {'edgeDirection': 'B', 'label': 'SPATIALLY_DISTRIBUTED_AS', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+edge exists:
+standing_human heatmap_12__/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg {'edgeDirection': 'B', 'label': 'SPATIALLY_DISTRIBUTED_AS', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+465590 {'edgeDirection': 'F', 'label': 'CAN_USE', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'prop2': '123', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'pk': 'prop1', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+edge exists:
+standing_human shoe {'edgeDirection': 'F', 'label': 'CAN_USE', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'prop2': '123', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'pk': 'prop1', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+565590 {'edgeDirection': 'B', 'label': 'CAN_USE', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'prop2': '123', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'pk': 'prop1', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+edge exists:
+standing_human shoe {'edgeDirection': 'B', 'label': 'CAN_USE', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'prop2': '123', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'pk': 'prop1', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+node already exists
+shoe_.jpg__/home/ozan/ilcrf/images/shoe_.jpg {'mediapath': '/home/ozan/ilcrf/images/shoe_.jpg', 'created_at': datetime.datetime(2015, 6, 9, 21, 2, 17, 95646), 'feed_id': '55774e8876b9a67be7082f06', 'handle': 'shoe_.jpg', 'label': 'Media,Image'}
+665590 {'edgeDirection': 'F', 'label': 'HAS_MEDIA', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+edge exists:
+shoe shoe_.jpg__/home/ozan/ilcrf/images/shoe_.jpg {'edgeDirection': 'F', 'label': 'HAS_MEDIA', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+765590 {'edgeDirection': 'B', 'label': 'HAS_MEDIA', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+edge exists:
+shoe shoe_.jpg__/home/ozan/ilcrf/images/shoe_.jpg {'edgeDirection': 'B', 'label': 'HAS_MEDIA', 'feed_id': '55774e8876b9a67be7082f06', 'source_text': 'Hallucinating Humans', 'keywords': 'Human,Affordance,Object,shoe,Standing', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/'}
+True
+Traceback (most recent call last):
+  File "add_to_graph_daemon.py", line 45, in main
+    assert False
+AssertionError
+

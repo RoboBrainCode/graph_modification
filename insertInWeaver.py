@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 import json
-# from weaverQuery import *
+from weaverQuery import *
 import sys
 import re
 import ntpath
@@ -126,7 +126,7 @@ def _add_edge_to_graph(edge_name, from_node_id, to_node_id, edge_props, feed_id)
     edge_props['label']=edge_name.upper()
     edge_props['feed_ids']=str(feed_id)
     global globalResult
-    globalResult= globalResult and InsertNewRelation(src=str(from_node_id),dst=str(to_node_id),edgeProps=edgeProps)
+    globalResult= globalResult and InsertNewRelation(src=str(from_node_id),dst=str(to_node_id),edgeProps=edge_props)
 
 def add_weaver_queries(json_feed):
     handles = [_normalize_handle_name(m.group(1)) for m in re.finditer('#([^ .]+)', json_feed['text'])]

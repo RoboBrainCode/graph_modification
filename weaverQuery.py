@@ -49,7 +49,7 @@ def InsertNode(Id='floor',CreatedAt=datetime.datetime.now(),nodeProps={}):
 			c.end_tx()
 			return True
 		except client.WeaverError:
-			print 'Internal Error, contact the system administrator'
+			print 'Internal Error, contact the system administrator:Node'
 			return False
 
 #Creating a new Concept Relationship in RoboBrain
@@ -69,14 +69,16 @@ def InsertRelation(CreatedAt=datetime.datetime.now(),src='1',dst='2',edgeDirecti
 		edgeProps.pop("created_at", None)
 		oldProps=edges[0].properties
 		c.begin_tx()
-		c.set_node_properties(node=Id,properties=getUpdatedProperty(edgeProps,oldProps))
+		newProps=getUpdatedProperty(edgeProps,oldProps)
+		print handle,newProps
+		c.set_edge_properties(edge=handle,properties=newProps)
 		try:
 			c.end_tx()
 			print 'edge exists:'
 			print src,dst,edgeProps
 			return True
 		except client.WeaverError:
-			print 'Internal Error, contact the system administrator'
+			print 'Internal Error, contact the system administrator:Edge'
 			return False
 
 
@@ -90,7 +92,7 @@ def InsertRelation(CreatedAt=datetime.datetime.now(),src='1',dst='2',edgeDirecti
 			print src,dst,edgeProps
 			return True
 		except:
-			print 'there is some internal error, contact the system administrator'
+			print 'there is some internal error, contact the system administrator:Edge'
 			return False
 	else:
 		print 'There cannot be two edges which have the exact same properties'
@@ -104,7 +106,8 @@ if __name__ == "__main__":
 	InsertNode(Id='floor',CreatedAt=datetime.datetime.now(),nodeProps={'pk': 'prop1,prop2', 'feed_id': '5576848d76b9a67abccd8073,modified', 'handle': 'floor123', 'prop2': '123', 'label': 'Concept,Image'})
 	read_props = c.get_node_properties('floor')
 	print read_props
-	InsertNode(Id='wall',CreatedAt=datetime.datetime.now(),nodeProps={'pk': 'prop1', 'feed_id': '5576848d76b9a67abccd8073', 'handle': 'wall', 'prop2': '123', 'label': 'Concept'})
+	InsertNode(Id='wall',CreatedAt=datetime.datetime.now(),nodeProps={'handle': 'heatmap_12', 'mediapath': '/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg', 'label': 'Media,Image', 'feed_id': '5576848d76b9a67abccd8073', 'prop2': '123', 'pk': 'prop1'})
+
 	read_props = c.get_node_properties('wall')
 	print read_props
 	InsertNewRelation(CreatedAt=datetime.datetime.now(),src='floor',dst='wall',edgeProps={'keywords': 'Human,Affordance,Object,shoe,Standing', 'pk': 'prop1', 'source_text': 'Hallucinating Humans', 'prop2': '123', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/','label':'hello'})
