@@ -185,5 +185,5 @@ def insertInWeaver(response):
     global globalResult
     globalResult=True
     with insertLock:
-    	add_weaver_queries(json_feed)
+        add_weaver_queries(json_feed)
     return globalResult
