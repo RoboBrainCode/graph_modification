@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 import json
-# from weaverQuery import *
+from weaverQuery import *
 import sys
 import re
 import ntpath

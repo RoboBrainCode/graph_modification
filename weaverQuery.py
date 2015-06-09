@@ -35,13 +35,14 @@ def InsertNode(Id='floor',CreatedAt=datetime.datetime.now(),nodeProps={}):
 	if not Id:
 		print colorred.format('undefined concept node handle')
 		return
+	print 'starting transaction'
 	c.begin_tx()
 	c.create_node(Id)
 	c.set_node_properties(node=Id,properties=nodeProps)
+	print 'partial transaction complete'
 	try:
 	    c.end_tx()
 	    print 'created a new node'
-	    node=c.get_node(node=Id)
 	except client.WeaverError:
 		print 'node already exists'
 		nodeProps.pop("created_at", None)
@@ -100,14 +101,16 @@ def InsertNewRelation(CreatedAt=datetime.datetime.now(),src='1',dst='2',edgeProp
 	InsertRelation(CreatedAt=CreatedAt,src=src,dst=dst,edgeDirection='B',edgeProps=edgeProps)
 
 if __name__ == "__main__":
+	print 'hello'
 	InsertNode(Id='floor',CreatedAt=datetime.datetime.now(),nodeProps={'pk': 'prop1,prop2', 'feed_id': '5576848d76b9a67abccd8073,modified', 'handle': 'floor123', 'prop2': '123', 'label': 'Concept,Image'})
 	read_props = c.get_node_properties('floor')
 	print read_props
-	InsertNode(Id='wall',CreatedAt=datetime.datetime.now(),nodeProps={'pk': 'prop1', 'feed_id': '5576848d76b9a67abccd8073', 'handle': 'wall', 'prop2': '123', 'label': 'Concept'})
+	
+	InsertNode(Id='wall',CreatedAt=datetime.datetime.now(),nodeProps={'handle': 'heatmap_12', 'mediapath': '/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg', 'label': 'Media,Image', 'feed_id': '5576848d76b9a67abccd8073', 'prop2': '123', 'pk': 'prop1'})
+
 	read_props = c.get_node_properties('wall')
 	print read_props
 	InsertNewRelation(CreatedAt=datetime.datetime.now(),src='floor',dst='wall',edgeProps={'keywords': 'Human,Affordance,Object,shoe,Standing', 'pk': 'prop1', 'source_text': 'Hallucinating Humans', 'prop2': '123', 'source_url': 'http://pr.cs.cornell.edu/hallucinatinghumans/','label':'hello'})
 	
-	InsertNode(Id='random123',CreatedAt=datetime.datetime.now(),nodeProps={'handle': 'heatmap_12', 'mediapath': '/home/ozan/ilcrf/shoe_12_1.jpg_cr.jpg', 'label': 'Media,Image', 'feed_id': '5576848d76b9a67abccd8073', 'prop2': '123', 'pk': 'prop1'})
 	
 
