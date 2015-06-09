@@ -40,17 +40,38 @@ def main():
             for m in messages:
                 json_feed = json.loads(
                     m.get_body(), object_hook=json_util.object_hook)
-                if insertInWeaver(json_feed):
-                    feed_queue.delete_message(m)
-                else:
-                    print 'Cannot insert the given message:'
-                    print m
+                print insertInWeaver(json_feed)
+                # feed_queue.delete_message(m)
+                assert False
+                # # if insertInWeaver(json_feed):
+                # #     feed_queue.delete_message(m)
+                # else:
+                #     print 'Cannot insert the given message:'
+                #     print m
 
     except Exception, e:
         print traceback.format_exc()
 
     finally:
         os.unlink(PIDFILE)
+def test(json_feed):
+    # print json_feed
+    insertInWeaver(json_feed)
 
 if __name__ == '__main__':
     main()
+    # test({
+    #     "username" : "arzav",
+    #     "_id": "546e6a2f5caae434656bbc36",
+    #     "feedtype" : "",
+    #     "mediashow" : [ ],
+    #     "text" : "#Simhat_Torah is a synonym of  #Rejoicing_in_the_Law",
+    #     "hashtags" : " simhat_torah rejoicing_in_the_law", 
+    #     "mediatype" : [ ],
+    #     "source_url" : "http://wordnet.princeton.edu/",
+    #     "source_text" : "WordNet",
+    #     "mediamap" : [ ],
+    #     "media" : [ ],
+    #     "keywords": ["Simhat_Torah","Rejoicing_in_the_Law","synonym","wordnet"], 
+    #     "upvotes" : 0, 
+    #     "graphStructure": ["#same_synset: #0 -> #1", "#same_synset: #1 -> #0"]})
