@@ -100,7 +100,7 @@ def InsertRelation(CreatedAt=datetime.datetime.now(),src='1',dst='2',edgeDirecti
 
 
 def InsertNewRelation(CreatedAt=datetime.datetime.now(),src='1',dst='2',edgeProps={}):
-	return InsertRelation(CreatedAt=CreatedAt,src=src,dst=dst,edgeDirection='F',edgeProps=edgeProps) and InsertRelation(CreatedAt=CreatedAt,src=src,dst=dst,edgeDirection='B',edgeProps=edgeProps)
+	return InsertRelation(CreatedAt=CreatedAt,src=src,dst=dst,edgeDirection='F',edgeProps=edgeProps) and InsertRelation(CreatedAt=CreatedAt,src=dst,dst=src,edgeDirection='B',edgeProps=edgeProps)
 
 if __name__ == "__main__":
 	InsertNode(Id='floor',CreatedAt=datetime.datetime.now(),nodeProps={'pk': 'prop1,prop2', 'feed_id': '5576848d76b9a67abccd8073,modified', 'handle': 'floor123', 'prop2': '123', 'label': 'Concept,Image'})
