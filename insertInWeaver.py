@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 import json
-from weaverQuery import *
+# from weaverQuery import *
 import sys
 import re
 import ntpath
@@ -13,8 +13,24 @@ import datetime
 from bson.objectid import ObjectId
 
 
-from threading import Lock
-insertLock=Lock()
+import json
+import yaml
+import urllib,requests
+import ast
+def PostWeaverQuery(fnName,params):
+    query=dict(fnName=fnName,params=params)
+    myport=3232
+    data=json.dumps(query)
+    myURL = "http://127.0.0.1:%s/weaverWrapper/execFn/" % (myport)
+    headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+    r = requests.get(myURL, data=data,headers=headers)
+    response=yaml.safe_load(r.text)
+    return response
+
+
+
+# from threading import Lock
+# insertLock=Lock()
 
 globalResult=True
 
@@ -99,7 +115,11 @@ def _add_media_node_to_graph(node_handle, mediatype, mediapath, feed_id,nodeProp
     nodeProps['feed_ids']=feed_id
     nodeProps['mediapath']=mediapath
     global globalResult
-    globalResult=globalResult and InsertNode(Id=u_id,nodeProps=nodeProps)
+    fnName='InsertNode'
+    params=dict(Id=u_id,nodeProps=nodeProps)
+    result=PostWeaverQuery(fnName,params)
+
+    globalResult=globalResult and result
     
     return u_id
 
@@ -113,7 +133,12 @@ def _add_node_to_graph(node_handle, node_idx, json_feed,nodeProps):
         nodeProps['feed_ids']=str(feed_id)
         nodeProps['labels']='Concept'
         global globalResult
-        globalResult=globalResult and  InsertNode(Id=str(node_handle),nodeProps=nodeProps)
+
+        fnName='InsertNode'
+        params=dict(Id=str(node_handle),nodeProps=nodeProps)
+        result=PostWeaverQuery(fnName,params)
+
+        globalResult=globalResult and  result
     else:
         node_handle = node_handle[1:] # strip dollar sign
         mediatype, mediapath = _get_media_type_path(node_idx, json_feed)
@@ -126,7 +151,12 @@ def _add_edge_to_graph(edge_name, from_node_id, to_node_id, edge_props, feed_id)
     edge_props['label']=edge_name.upper()
     edge_props['feed_ids']=str(feed_id)
     global globalResult
-    globalResult= globalResult and InsertNewRelation(src=str(from_node_id),dst=str(to_node_id),edgeProps=edge_props)
+
+    fnName='InsertRelationUndirected'
+    params=dict(src=str(from_node_id),dst=str(to_node_id),edgeProps=edge_props)
+    result=PostWeaverQuery(fnName,params)
+
+    globalResult= globalResult and result
 
 def add_weaver_queries(json_feed):
     handles = [_normalize_handle_name(m.group(1)) for m in re.finditer('#([^ .]+)', json_feed['text'])]
@@ -186,6 +216,5 @@ def insertInWeaver(response):
         json_feed[key]=retVal
     global globalResult
     globalResult=True
-    with insertLock:
-        add_weaver_queries(json_feed)
+    add_weaver_queries(json_feed)
     return globalResult
