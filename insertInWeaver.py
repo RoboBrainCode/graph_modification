@@ -133,7 +133,9 @@ def add_weaver_queries(json_feed):
     handle_graph_ids = []
     for i, handle in enumerate(handles):
         if json_feed['nodeProps'] and str(i) in json_feed['nodeProps']:
-            nodeProps=dict(json_feed['nodeProps'][str(i)])   
+            nodeProps=dict(json_feed['nodeProps'][str(i)])  
+	else:
+	    nodeProps=dict() 
         handle_graph_ids.append(_add_node_to_graph(handle, i, json_feed,nodeProps))
 
     edges_with_indices = _get_edges_with_handle_indices(json_feed)
@@ -178,7 +180,7 @@ def insertInWeaver(response):
         if type(vals)==list:
            for val in vals:
                retVal=retVal+','+val
-            retVal=retVal[1:]
+	   retVal=retVal[1:]
         else:
             retVal=vals
         json_feed[key]=retVal
